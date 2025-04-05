@@ -1,6 +1,8 @@
-// src/context/SearchContext.jsx
+//SearchContext.jsx
+
 import React, { createContext, useState, useContext } from 'react';
 import { searchBuses } from '../api/searchApi';
+import { useNavigate } from 'react-router-dom';
 
 const SearchContext = createContext();
 
@@ -12,43 +14,60 @@ export const SearchProvider = ({ children }) => {
     fromStopId: '',
     toStopId: '',
   });
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState({
+    buses: [],
+    routeName: '',
+    fromStopName: '',
+    toStopName: ''
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-// src/context/SearchContext.jsx - update the performSearch function
-
-const performSearch = async (params) => {
-  try {
-    setLoading(true);
-    setError(null);
+  const performSearch = async (params) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+    // Ensure we're using the correct parameter names
+    const searchParams = {
+      routeId: params.routeId,
+      fromStopId: params.fromStopId || params.fromStop,
+      toStopId: params.toStopId || params.toStop
+    };
     
-    const updatedParams = params || searchParams;
-    setSearchParams(updatedParams);
+    setSearchParams(searchParams);
     
-    console.log('Search params:', updatedParams);
-    // Correctly pass the individual parameters instead of the whole object
-    const results = await searchBuses(updatedParams);
-
-    setSearchResults(results);
-    // Navigate with URL parameters
-    navigate(`/buses?routeId=${params.routeId}&fromStopId=${params.fromStopId}&toStopId=${params.toStopId}`);
-    return results;
-  } catch (err) {
-    setError(err.response?.data?.message || 'Search failed'); 
-    throw err;
-  } finally {
-    setLoading(false);
-  }
-};
+    const results = await searchBuses(searchParams);
+    
+    setSearchResults({
+      buses: results.buses,
+      routeName: results.routeName,
+      fromStopName: results.fromStopName,
+      toStopName: results.toStopName
+    });
+    
+    navigate(`/buses?routeId=${searchParams.routeId}&fromStopId=${searchParams.fromStopId}&toStopId=${searchParams.toStopId}`);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Search failed'); 
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const clearSearch = () => {
     setSearchParams({
       routeId: '',
-      fromStop: '',
-      toStop: '',
+      fromStopId: '',
+      toStopId: '',
     });
-    setSearchResults([]);
+    setSearchResults({
+      buses: [],
+      routeName: '',
+      fromStopName: '',
+      toStopName: ''
+    });
   };
 
   const value = {

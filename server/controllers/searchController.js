@@ -1,76 +1,80 @@
-// searchController.js
 const Bus = require('../models/Bus');
 const Route = require('../models/Route');
-// const Stop = require('../models/Stop');
+const Stop = require('../models/Stop');
 
-// Search for buses based on route and stops
 exports.searchBuses = async (req, res) => {
-
   console.log('searchBuses controller was called');
   console.log('Request body:', req.body);
-  console.log('Request query:', req.query);
 
   try {
-    
     const { routeId, fromStopId, toStopId } = req.body;
-    // Check if route exists
-    const route = await Route.findById(routeId).populate('stops');
+    console.log('Search parameters received:', { routeId, fromStopId, toStopId });
+    // Get route with populated stops and their names
+    const route = await Route.findById(routeId).populate({
+      path: 'stops',
+      select: 'name'
+    });
+    
     if (!route) {
       return res.status(404).json({ message: 'Route not found' });
     }
     
-    // Check if fromStop and toStop exist on this route
-    const fromStopIndex = route.stops.findIndex(stop => stop._id.toString() === fromStopId);
-    const toStopIndex = route.stops.findIndex(stop => stop._id.toString() === toStopId);
+    // Find the stop objects
+    const fromStop = route.stops.find(stop => stop._id.toString() === fromStopId);
+    const toStop = route.stops.find(stop => stop._id.toString() === toStopId);
     
-    if (fromStopIndex === -1 || toStopIndex === -1) {
+    if (!fromStop || !toStop) {
       return res.status(400).json({ message: 'One or both stops are not on this route' });
     }
+    
+    const fromStopIndex = route.stops.findIndex(stop => stop._id.toString() === fromStopId);
+    const toStopIndex = route.stops.findIndex(stop => stop._id.toString() === toStopId);
     
     if (fromStopIndex >= toStopIndex) {
       return res.status(400).json({ message: 'From-stop must come before to-stop on the route' });
     }
     
-    // Find buses that service this route and are available
+    // Find available buses for this route
     const buses = await Bus.find({
-      routes: routeId,
+      route: routeId,
       isAvailable: true
     }).populate('owner', 'name');
     
-    // Calculate journey details for each bus
+    console.log('Buses found for route:', buses);
+    // Prepare results with names included
     const busResults = buses.map(bus => {
-      // In a real application, these would be calculated based on actual bus schedules
-      // For this example, we're using placeholder calculations
-      
-      // Calculate arrival time at fromStop (for demo, using current time + random offset)
-      const currentTime = new Date();
-      const arrivalTime = new Date(currentTime.getTime() + (Math.random() * 60 * 60 * 1000)); // Random time within the next hour
-      
-      // Calculate journey duration based on stop distance (for demo, using 10min per stop)
       const stopsBetween = toStopIndex - fromStopIndex;
       const journeyDurationMinutes = stopsBetween * 10;
-      
-      // Calculate destination time based on arrival + duration
+      const currentTime = new Date();
+      const arrivalTime = new Date(currentTime.getTime() + (Math.random() * 60 * 60 * 1000));
       const destinationTime = new Date(arrivalTime.getTime() + (journeyDurationMinutes * 60 * 1000));
-      
-      // Calculate fare based on distance (for demo, $2 base + $1 per stop)
       const fare = 2 + stopsBetween * 1;
       
       return {
         _id: bus._id,
-        busNumber: bus.busNumber,
+        busNumber: bus.regNumber,
+        busName: bus.name,
         owner: bus.owner,
         ratings: bus.ratings,
-        numReviews: bus.numReviews,
+        numReviews: bus.ratingCounts?.overall || 0,
         isAvailable: bus.isAvailable,
         arrivalTime: arrivalTime.toISOString(),
         journeyDuration: journeyDurationMinutes,
         destinationTime: destinationTime.toISOString(),
-        fare: fare
+        fare: fare,
+        // Include names in the response
+        routeName: route.name,
+        fromStopName: fromStop.name,
+        toStopName: toStop.name
       };
     });
     
-    res.json(busResults);
+    res.json({
+      buses: busResults,
+      routeName: route.name,
+      fromStopName: fromStop.name,
+      toStopName: toStop.name
+    });
   } catch (error) {
     console.error('Error in searchBuses:', error);
     res.status(500).json({ message: 'Server error', error: error.message });

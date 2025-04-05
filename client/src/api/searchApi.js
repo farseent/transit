@@ -1,34 +1,52 @@
 //searchApi.js
 
 import axiosInstance from './axios';
-// import axios from './axios';
 
 /**
  * Search for buses based on route and stops
- * @param {string} routeId - Route ID
- * @param {string} fromStop - Origin stop ID
- * @param {string} toStop - Destination stop ID
+ * @param {Object} params - Search parameters
+ * @param {string} params.routeId - Route ID
+ * @param {string} params.fromStop - Origin stop ID
+ * @param {string} params.toStop - Destination stop ID
  * @returns {Promise<Array>} List of buses matching the search criteria
  */
-// searchApi.js
 export const searchBuses = async (params) => {
-  // If you're passing an object
-  const { routeId, fromStop, toStop } = params;
-  console.log('Sending search request with:', { routeId, fromStop, toStop });
+  const { routeId, fromStopId, toStopId } = params;
+  console.log('Sending search request with:', { routeId, fromStopId, toStopId });
   
   try {
     const response = await axiosInstance.post('/search/buses', {
-      routeId:routeId,
-      fromStopId: fromStop,
-      toStopId: toStop       
+      routeId,
+      fromStopId,
+      toStopId       
     });
-    
-    return response.data;
+
+    // Map the buses and include names in the response
+    const mappedResponse = {
+      buses: response.data.buses.map(bus => ({
+        _id: bus._id,
+        busNumber: bus.busNumber || bus.regNumber,
+        busName: bus.busName,
+        arrivalTime: bus.arrivalTime,
+        destinationTime: bus.destinationTime,
+        duration: bus.journeyDuration,
+        fare: bus.fare,
+        averageRating: bus.ratings?.overall || 0,
+        reviewCount: bus.numReviews || 0,
+        isAvailable: bus.isAvailable
+      })),
+      routeName: response.data.routeName,
+      fromStopName: response.data.fromStopName,
+      toStopName: response.data.toStopName
+    };
+
+    return mappedResponse;
   } catch (error) {
     console.error('Error searching buses:', error);
     throw error;
   }
 };
+
 /**
  * Get detailed information about a specific bus
  * @param {string} busId - Bus ID
@@ -38,7 +56,7 @@ export const searchBuses = async (params) => {
  */
 export const getBusDetails = async (busId, fromStop, toStop) => {
   try {
-    const response = await axiosInstance.get(`/api/buses/${busId}`, {
+    const response = await axiosInstance.get(`/buses/${busId}`, {
       params: {
         fromStop,
         toStop

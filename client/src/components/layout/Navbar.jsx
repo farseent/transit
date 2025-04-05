@@ -20,7 +20,6 @@ const Navbar = () => {
 
   const menuItems = [
     { name: 'Home', path: '/' },
-    { name: 'Search Buses', path: '/buses' },
   ];
 
   // Make sure to use the current isAuthenticated value

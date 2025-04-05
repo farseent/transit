@@ -1,3 +1,4 @@
+//BusCard.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Rating from '../common/Rating';
@@ -29,7 +30,7 @@ const BusCard = ({ bus, fromStop, toStop }) => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
           <div className="mb-2 md:mb-0">
             <h2 className="text-xl font-bold text-gray-800">{busName}</h2>
-            <p className="text-secondary-600">Bus #{busNumber}</p>
+            <p className="text-secondary-600">{busNumber}</p>
           </div>
           
           <div className="flex items-center">

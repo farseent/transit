@@ -13,7 +13,7 @@ const {
 const { protect } = require('../middleware/authMiddleware');
 
 // Public routes
-router.post('/register', registerUser); 
+router.post('/register', registerUser); ~
 router.post('/login', loginUser);
 
 // Protected routes
