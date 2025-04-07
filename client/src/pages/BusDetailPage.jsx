@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import busApi from '../api/busApi';
+import { fetchBusReviews, addReview } from '../api/reviewApi';
+import { addComplaint } from '../api/complaintApi';
 import { useAuth } from '../context/AuthContext';
 
 import BusInfo from '../components/busDetails/BusInfo';
@@ -11,7 +13,11 @@ import Loader from '../components/common/Loader';
 import Alert from '../components/common/Alert';
 
 const BusDetailPage = () => {
-  const { busId } = useParams();
+  const { id } = useParams(); // Changed from busId to id to match route parameter
+  const [searchParams] = useSearchParams();
+  const fromStop = searchParams.get('fromStop');
+  const toStop = searchParams.get('toStop');
+  
   const { isAuthenticated } = useAuth();
   const [bus, setBus] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -23,25 +29,34 @@ const BusDetailPage = () => {
   useEffect(() => {
     const fetchBusDetails = async () => {
       try {
-        const busResponse = await busApi.getBusById(busId);
-        const reviewsResponse = await busApi.getBusReviews(busId);
+        // console.log('Fetching bus details for ID:', id);
+        // Fetch bus details
+        const busData = await busApi.fetchBusDetails(id);
+        setBus(busData.bus || busData);
+        console.log('bus data in busdetailpage',busData);
         
-        setBus(busResponse.data);
-        setReviews(reviewsResponse.data);
+        // Fetch reviews separately
+        const reviewsData = await fetchBusReviews(id);
+        setReviews(reviewsData);
+        
         setLoading(false);
       } catch (err) {
+        console.error('Error fetching bus details:', err);
         setError('Failed to load bus details');
         setLoading(false);
       }
     };
 
-    fetchBusDetails();
-  }, [busId]);
+    if (id) {
+      fetchBusDetails();
+    }
+  }, [id]);
 
   const handleAddReview = async (reviewData) => {
     try {
-      const response = await busApi.addReview(busId, reviewData);
-      setReviews([...reviews, response.data]);
+      // Using the dedicated review API
+      const response = await addReview(id, reviewData);
+      setReviews([...reviews, response]);
       setShowReviewForm(false);
     } catch (err) {
       setError('Failed to submit review');
@@ -50,7 +65,8 @@ const BusDetailPage = () => {
 
   const handleAddComplaint = async (complaintData) => {
     try {
-      await busApi.addComplaint(busId, complaintData);
+      // Using the dedicated complaint API
+      await addComplaint(id, complaintData);
       setShowComplaintForm(false);
       alert('Complaint submitted successfully');
     } catch (err) {
@@ -67,7 +83,7 @@ const BusDetailPage = () => {
       <div className="grid md:grid-cols-2 gap-8">
         {/* Bus Information Section */}
         <div>
-          <BusInfo bus={bus} />
+          <BusInfo bus={bus} fromStop={fromStop} toStop={toStop} />
         </div>
 
         {/* Reviews Section */}

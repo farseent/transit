@@ -12,7 +12,7 @@ import axiosInstance from './axios';
  */
 export const searchBuses = async (params) => {
   const { routeId, fromStopId, toStopId } = params;
-  console.log('Sending search request with:', { routeId, fromStopId, toStopId });
+  // console.log('Sending search request with:', { routeId, fromStopId, toStopId });
   
   try {
     const response = await axiosInstance.post('/search/buses', {

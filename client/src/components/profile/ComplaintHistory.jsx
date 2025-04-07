@@ -27,7 +27,7 @@ const ComplaintHistory = ({ complaints }) => {
   }
   return (
     <div className="bg-white rounded-lg shadow-card p-6">
-      <h2 className="text-2xl font-semibold mb-4">Your Complaints</h2>
+      {/* <h2 className="text-2xl font-semibold mb-4">Your Complaints</h2> */}
       
       {complaints && complaints.length > 0 ? (
         <div className="space-y-4">

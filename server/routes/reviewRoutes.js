@@ -4,15 +4,19 @@ const router = express.Router();
 const { 
   getBusReviews,
   createReview,
-  updateReview
+  // updateReview
 } = require('../controllers/reviewController');
 const { protect } = require('../middleware/authMiddleware');
 
 // Public routes
-router.get('/bus/:busId', getBusReviews);
+router.get('/:busId/reviews', getBusReviews); // Matches frontend call
 
 // Protected routes
-router.post('/', protect, createReview);
-router.put('/:id', protect, updateReview);
+//use either when needed
+router.post('/:busId/reviews', protect, createReview);
+// router.post('/', protect, createReview);
+
+
+// router.put('/:id', protect, updateReview);
 
 module.exports = router;

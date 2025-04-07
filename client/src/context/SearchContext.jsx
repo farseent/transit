@@ -38,7 +38,7 @@ export const SearchProvider = ({ children }) => {
     
     setSearchParams(searchParams);
     
-    const results = await searchBuses(searchParams);
+    const results = await searchBuses(searchParams);    
     
     setSearchResults({
       buses: results.buses,

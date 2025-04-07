@@ -3,15 +3,16 @@
 import React from 'react';
 import BusCard from './BusCard';
 
-const BusList = ({ buses, fromStop, toStop }) => {
+const BusList = ({ buses, fromStopId, toStopId }) => {
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4"> 
       {buses.map((bus) => (
         <BusCard 
           key={bus._id} 
           bus={bus} 
-          fromStop={fromStop}
-          toStop={toStop}
+          fromStopId={fromStopId}
+          toStopId={toStopId}
         />
       ))}
     </div>

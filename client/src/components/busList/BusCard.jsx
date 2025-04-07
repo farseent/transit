@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Rating from '../common/Rating';
 import { formatTime, formatDuration, formatCurrency } from '../../utils/formatters';
 
-const BusCard = ({ bus, fromStop, toStop }) => {
+const BusCard = ({ bus, fromStopId, toStopId }) => {
   const navigate = useNavigate();
   
   const {
@@ -20,8 +20,8 @@ const BusCard = ({ bus, fromStop, toStop }) => {
     isAvailable
   } = bus;
   
-  const handleViewDetails = () => {
-    navigate(`/bus/${_id}?fromStop=${fromStop}&toStop=${toStop}`);
+  const handleViewDetails = () => {    
+    navigate(`/buses/${_id}?fromStopId=${fromStopId}&toStopId=${toStopId}`);
   };
   
   return (
@@ -49,13 +49,14 @@ const BusCard = ({ bus, fromStop, toStop }) => {
           <div className="flex flex-col">
             <span className="text-secondary-600 text-sm">Departure</span>
             <span className="font-semibold text-lg">{formatTime(arrivalTime)}</span>
-            <span className="text-secondary-500 text-sm">{fromStop}</span>
+            {/* <span className="text-secondary-500 text-sm">{fromStopId}</span> */}
           </div>
           
           <div className="flex flex-col items-center">
             <span className="text-secondary-600 text-sm">Duration</span>
             <div className="flex items-center mt-1">
-              <span className="font-semibold text-lg">{formatDuration(duration)}</span>
+              <span className="font-semibold text-lg">55 min </span>
+              {/* <span className="font-semibold text-lg">{formatDuration(duration)}</span> */}
             </div>
             <div className="relative w-full mt-2 hidden md:block">
               <div className="border-t-2 border-dashed border-secondary-300 w-full absolute top-1/2 transform -translate-y-1/2"></div>
@@ -67,14 +68,15 @@ const BusCard = ({ bus, fromStop, toStop }) => {
           <div className="flex flex-col text-right">
             <span className="text-secondary-600 text-sm">Arrival</span>
             <span className="font-semibold text-lg">{formatTime(destinationTime)}</span>
-            <span className="text-secondary-500 text-sm">{toStop}</span>
+            {/* <span className="text-secondary-500 text-sm">{toStopId}</span> */}
           </div>
         </div>
         
         <div className="flex flex-col md:flex-row md:items-center md:justify-between pt-4 border-t border-secondary-100">
           <div className="mb-3 md:mb-0">
             <span className="text-secondary-600 mr-2">Fare:</span>
-            <span className="text-xl font-bold text-primary-600">{formatCurrency(fare)}</span>
+            <span className="text-xl font-bold text-primary-600">40</span>
+            {/* <span className="text-xl font-bold text-primary-600">{formatCurrency(fare)}</span> */}
           </div>
           
           <button

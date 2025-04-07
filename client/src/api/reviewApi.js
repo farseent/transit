@@ -7,8 +7,13 @@ import axios from './axios';
  * @returns {Promise<Array>} List of reviews
  */
 export const fetchBusReviews = async (busId) => {
-  const response = await axios.get(`/buses/${busId}/reviews`);
-  return response.data;
+  try {
+    const response = await axios.get(`/buses/${busId}/reviews`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching reviews:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to fetch reviews');
+  }
 };
 
 /**
@@ -18,6 +23,11 @@ export const fetchBusReviews = async (busId) => {
  * @returns {Promise<Object>} Added review
  */
 export const addReview = async (busId, reviewData) => {
-  const response = await axios.post(`/buses/${busId}/reviews`, reviewData);
-  return response.data;
+  try {
+    const response = await axios.post(`/buses/${busId}/reviews`, reviewData);
+    return response.data;
+  } catch (error) {
+    console.error('Error adding review:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Failed to add review');
+  }
 };

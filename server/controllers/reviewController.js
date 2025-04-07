@@ -9,10 +9,14 @@ exports.getBusReviews = async (req, res) => {
       .populate('user', 'name')
       .sort({ createdAt: -1 });
     
-    res.json(reviews);
+      res.status(200).json(reviews);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
+    console.error('Error fetching reviews:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to fetch reviews',
+      error: error.message 
+    });  }
 };
 
 // Create a new review
@@ -70,70 +74,70 @@ exports.createReview = async (req, res) => {
 };
 
 // Update a review
-exports.updateReview = async (req, res) => {
-  try {
-    const review = await Review.findById(req.params.id);
+// exports.updateReview = async (req, res) => {
+//   try {
+//     const review = await Review.findById(req.params.id);
     
-    if (!review) {
-      return res.status(404).json({ message: 'Review not found' });
-    }
+//     if (!review) {
+//       return res.status(404).json({ message: 'Review not found' });
+//     }
     
-    // Check if user is the owner of this review
-    if (review.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Not authorized to update this review' });
-    }
+//     // Check if user is the owner of this review
+//     if (review.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+//       return res.status(403).json({ message: 'Not authorized to update this review' });
+//     }
     
-    const { 
-      cleanliness, 
-      punctuality, 
-      staffBehavior, 
-      comfort, 
-      comment 
-    } = req.body;
+//     const { 
+//       cleanliness, 
+//       punctuality, 
+//       staffBehavior, 
+//       comfort, 
+//       comment 
+//     } = req.body;
     
-    // Calculate new overall rating
-    const overallRating = (
-      (cleanliness + punctuality + staffBehavior + comfort) / 4
-    ).toFixed(1);
+//     // Calculate new overall rating
+//     const overallRating = (
+//       (cleanliness + punctuality + staffBehavior + comfort) / 4
+//     ).toFixed(1);
     
-    review.cleanliness = cleanliness || review.cleanliness;
-    review.punctuality = punctuality || review.punctuality;
-    review.staffBehavior = staffBehavior || review.staffBehavior;
-    review.comfort = comfort || review.comfort;
-    review.overallRating = parseFloat(overallRating);
-    review.comment = comment || review.comment;
+//     review.cleanliness = cleanliness || review.cleanliness;
+//     review.punctuality = punctuality || review.punctuality;
+//     review.staffBehavior = staffBehavior || review.staffBehavior;
+//     review.comfort = comfort || review.comfort;
+//     review.overallRating = parseFloat(overallRating);
+//     review.comment = comment || review.comment;
     
-    const updatedReview = await review.save();
+//     const updatedReview = await review.save();
     
-    // Update bus average ratings
-    await updateBusRatings(review.bus);
+//     // Update bus average ratings
+//     await updateBusRatings(review.bus);
     
-    res.json(updatedReview);
-  } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
-  }
-};
+//     res.json(updatedReview);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Server error', error: error.message });
+//   }
+// };
 
 // Helper function to update bus ratings
-const updateBusRatings = async (busId) => {
-  const reviews = await Review.find({ bus: busId });
+// const updateBusRatings = async (busId) => {
+//   const reviews = await Review.find({ bus: busId });
   
-  if (reviews.length === 0) return;
+//   if (reviews.length === 0) return;
   
-  const avgCleanlinessRating = reviews.reduce((sum, review) => sum + review.cleanliness, 0) / reviews.length;
-  const avgPunctualityRating = reviews.reduce((sum, review) => sum + review.punctuality, 0) / reviews.length;
-  const avgStaffBehaviorRating = reviews.reduce((sum, review) => sum + review.staffBehavior, 0) / reviews.length;
-  const avgComfortRating = reviews.reduce((sum, review) => sum + review.comfort, 0) / reviews.length;
-  const avgOverallRating = reviews.reduce((sum, review) => sum + review.overallRating, 0) / reviews.length;
+//   const avgCleanlinessRating = reviews.reduce((sum, review) => sum + review.cleanliness, 0) / reviews.length;
+//   const avgPunctualityRating = reviews.reduce((sum, review) => sum + review.punctuality, 0) / reviews.length;
+//   const avgStaffBehaviorRating = reviews.reduce((sum, review) => sum + review.staffBehavior, 0) / reviews.length;
+//   const avgComfortRating = reviews.reduce((sum, review) => sum + review.comfort, 0) / reviews.length;
+//   const avgOverallRating = reviews.reduce((sum, review) => sum + review.overallRating, 0) / reviews.length;
   
-  await Bus.findByIdAndUpdate(busId, {
-    ratings: {
-      cleanliness: avgCleanlinessRating.toFixed(1),
-      punctuality: avgPunctualityRating.toFixed(1),
-      staffBehavior: avgStaffBehaviorRating.toFixed(1),
-      comfort: avgComfortRating.toFixed(1),
-      overall: avgOverallRating.toFixed(1)
-    },
-    numReviews: reviews.length
-  });
-};
+//   await Bus.findByIdAndUpdate(busId, {
+//     ratings: {
+//       cleanliness: avgCleanlinessRating.toFixed(1),
+//       punctuality: avgPunctualityRating.toFixed(1),
+//       staffBehavior: avgStaffBehaviorRating.toFixed(1),
+//       comfort: avgComfortRating.toFixed(1),
+//       overall: avgOverallRating.toFixed(1)
+//     },
+//     numReviews: reviews.length
+//   });
+// };

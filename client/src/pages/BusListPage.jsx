@@ -20,9 +20,12 @@ const BusListPage = () => {
         toStopId: searchParams.get('toStopId')
       };
       performSearch(params);
-    }
+    }    
   }, [searchParams]);
-  
+
+  const fromStopId = searchParams.get('fromStopId');
+  const toStopId = searchParams.get('toStopId');
+
   const handleBackToSearch = () => navigate('/');
 
   return (
@@ -75,7 +78,7 @@ const BusListPage = () => {
           </button>
         </div>
       ) : (
-        <BusList buses={searchResults.buses} />
+        <BusList buses={searchResults.buses} fromStopId={fromStopId} toStopId={toStopId} />
       )}
     </div>
   );

@@ -73,7 +73,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use('/api/users', userRoutes);
 app.use('/api/buses', busRoutes);
 app.use('/api/routes', routeRoutes);
-app.use('/api/reviews', reviewRoutes);
+app.use('/api/buses', reviewRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/complaints', complaintRoutes);
 

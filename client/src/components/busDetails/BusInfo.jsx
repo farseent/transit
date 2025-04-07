@@ -1,15 +1,15 @@
 import React from 'react';
-import Rating from '../common/Rating';
 import { Clock, DollarSign, MapPin, Bus, Star } from 'lucide-react';
 
 const BusInfo = ({ bus }) => {
+  
   return (
     <div className="bg-white shadow-card rounded-lg p-6">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-3xl font-bold text-primary-600">{bus.routeName}</h1>
         <div className="flex items-center">
           <Star className="text-yellow-500 mr-2" />
-          <span className="text-lg font-semibold">{bus.averageRating.toFixed(1)}</span>
+          <span className="text-lg font-semibold">{bus.averageRating?.toFixed(1) ?? 'N/A'}</span>
           <span className="text-gray-500 ml-2">({bus.totalReviews} reviews)</span>
         </div>
       </div>

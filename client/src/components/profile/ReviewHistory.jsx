@@ -12,7 +12,7 @@ const ReviewHistory = ({ reviews }) => {
   }
   return (
     <div className="bg-white rounded-lg shadow-card p-6 mb-6">
-      <h2 className="text-2xl font-semibold mb-4">Your Reviews</h2>
+      {/* <h2 className="text-2xl font-semibold mb-4">Your Reviews</h2> */}
       
       {reviews && reviews.length > 0 ? (
         <div className="space-y-4">
