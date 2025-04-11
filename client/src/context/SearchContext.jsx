@@ -2,7 +2,6 @@
 
 import React, { createContext, useState, useContext } from 'react';
 import { searchBuses } from '../api/searchApi';
-import { useNavigate } from 'react-router-dom';
 
 const SearchContext = createContext();
 
@@ -22,7 +21,6 @@ export const SearchProvider = ({ children }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
   const performSearch = async (params) => {
     try {
@@ -47,7 +45,6 @@ export const SearchProvider = ({ children }) => {
       toStopName: results.toStopName
     });
     
-    navigate(`/buses?routeId=${searchParams.routeId}&fromStopId=${searchParams.fromStopId}&toStopId=${searchParams.toStopId}`);
     } catch (err) {
       setError(err.response?.data?.message || 'Search failed'); 
       throw err;

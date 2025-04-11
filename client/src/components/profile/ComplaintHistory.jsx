@@ -54,7 +54,7 @@ const ComplaintHistory = ({ complaints }) => {
               
               <div className="mb-2">
                 <span className="text-sm text-gray-600 mr-2">Issue Type:</span>
-                <span className="capitalize">{complaint.type}</span>
+                <span className="capitalize text-gray-700">{complaint.category}</span>
               </div>
               
               <p className="text-gray-700 mt-2">{complaint.description}</p>

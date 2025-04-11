@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Rating from '../common/Rating';
 import { formatTime, formatDuration, formatCurrency } from '../../utils/formatters';
 
-const BusCard = ({ bus, fromStopId, toStopId }) => {
+const BusCard = ({ bus, routeId, fromStopId, toStopId }) => {
   const navigate = useNavigate();
   
   const {
@@ -21,7 +21,7 @@ const BusCard = ({ bus, fromStopId, toStopId }) => {
   } = bus;
   
   const handleViewDetails = () => {    
-    navigate(`/buses/${_id}?fromStopId=${fromStopId}&toStopId=${toStopId}`);
+    navigate(`/buses/${_id}?routeId=${routeId}fromStopId=${fromStopId}&toStopId=${toStopId}`);
   };
   
   return (

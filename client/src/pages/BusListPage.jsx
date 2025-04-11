@@ -13,7 +13,7 @@ const BusListPage = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!searchResults.buses.length && searchParams.toString()) {
+    if (searchParams.toString()) {
       const params = {
         routeId: searchParams.get('routeId'),
         fromStopId: searchParams.get('fromStopId'),
@@ -23,8 +23,10 @@ const BusListPage = () => {
     }    
   }, [searchParams]);
 
+  const routeId = searchParams.get('routeId');
   const fromStopId = searchParams.get('fromStopId');
   const toStopId = searchParams.get('toStopId');
+  
 
   const handleBackToSearch = () => navigate('/');
 
@@ -78,7 +80,7 @@ const BusListPage = () => {
           </button>
         </div>
       ) : (
-        <BusList buses={searchResults.buses} fromStopId={fromStopId} toStopId={toStopId} />
+        <BusList buses={searchResults.buses} routeId={routeId} fromStopId={fromStopId} toStopId={toStopId} />
       )}
     </div>
   );

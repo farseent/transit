@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { Star, AlertCircle, X, MessageSquare } from 'lucide-react';
 import busApi from '../api/busApi';
 import { fetchBusReviews, addReview } from '../api/reviewApi';
 import { addComplaint } from '../api/complaintApi';
@@ -13,32 +14,27 @@ import Loader from '../components/common/Loader';
 import Alert from '../components/common/Alert';
 
 const BusDetailPage = () => {
-  const { id } = useParams(); // Changed from busId to id to match route parameter
+  const { id } = useParams();
   const [searchParams] = useSearchParams();
   const fromStop = searchParams.get('fromStop');
   const toStop = searchParams.get('toStop');
+  const navigate = useNavigate();
   
   const { isAuthenticated } = useAuth();
   const [bus, setBus] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [alert, setAlert] = useState(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showComplaintForm, setShowComplaintForm] = useState(false);
 
   useEffect(() => {
     const fetchBusDetails = async () => {
       try {
-        // console.log('Fetching bus details for ID:', id);
-        // Fetch bus details
         const busData = await busApi.fetchBusDetails(id);
-        setBus(busData.bus || busData);
-        console.log('bus data in busdetailpage',busData);
-        
-        // Fetch reviews separately
-        const reviewsData = await fetchBusReviews(id);
-        setReviews(reviewsData);
-        
+        setBus(busData.bus);
+        setReviews(busData.reviews || []);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching bus details:', err);
@@ -54,23 +50,52 @@ const BusDetailPage = () => {
 
   const handleAddReview = async (reviewData) => {
     try {
-      // Using the dedicated review API
       const response = await addReview(id, reviewData);
       setReviews([...reviews, response]);
       setShowReviewForm(false);
+      setAlert({ type: 'success', message: 'Review submitted successfully!' });
+      setTimeout(() => setAlert(null), 3000);
     } catch (err) {
-      setError('Failed to submit review');
+      setAlert({ type: 'danger', message: 'Failed to submit review' });
+      setTimeout(() => setAlert(null), 3000);
     }
   };
 
   const handleAddComplaint = async (complaintData) => {
     try {
-      // Using the dedicated complaint API
       await addComplaint(id, complaintData);
       setShowComplaintForm(false);
-      alert('Complaint submitted successfully');
+      setAlert({ type: 'success', message: 'Complaint submitted successfully!' });
+      setTimeout(() => setAlert(null), 3000);
     } catch (err) {
-      setError('Failed to submit complaint');
+      setAlert({ type: 'danger', message: 'Failed to submit complaint' });
+      setTimeout(() => setAlert(null), 3000);
+    }
+  };
+
+  const handleReviewButtonClick = () => {
+    if (isAuthenticated) {
+      setShowReviewForm(!showReviewForm);
+      setShowComplaintForm(false); // Close complaint form if open
+    } else {
+      setAlert({ type: 'warning', message: 'Please login to add a review' });
+      setTimeout(() => {
+        setAlert(null);
+        navigate('/login', { state: { from: `/bus/${id}` } });
+      }, 2000);
+    }
+  };
+
+  const handleComplaintButtonClick = () => {
+    if (isAuthenticated) {
+      setShowComplaintForm(!showComplaintForm);
+      setShowReviewForm(false); // Close review form if open
+    } else {
+      setAlert({ type: 'warning', message: 'Please login to report a complaint' });
+      setTimeout(() => {
+        setAlert(null);
+        navigate('/login', { state: { from: `/bus/${id}` } });
+      }, 2000);
     }
   };
 
@@ -80,6 +105,8 @@ const BusDetailPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {alert && <Alert type={alert.type} message={alert.message} />}
+      
       <div className="grid md:grid-cols-2 gap-8">
         {/* Bus Information Section */}
         <div>
@@ -87,45 +114,81 @@ const BusDetailPage = () => {
         </div>
 
         {/* Reviews Section */}
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Reviews</h2>
-            {isAuthenticated && (
-              <button 
-                onClick={() => setShowReviewForm(!showReviewForm)}
-                className="btn btn-primary"
-              >
-                {showReviewForm ? 'Cancel' : 'Add Review'}
-              </button>
-            )}
+        <div className="bg-gray-50 rounded-lg p-6 shadow-sm">
+          <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-4">
+            <h2 className="text-2xl font-bold text-gray-800">
+              <span className="flex items-center gap-2">
+                <MessageSquare size={20} className="text-blue-600" />
+                Reviews
+              </span>
+            </h2>
+            
+            <button 
+              onClick={handleReviewButtonClick}
+              className={`flex items-center gap-2 rounded-md px-4 py-2 font-medium text-sm transition-all duration-200 ${
+                showReviewForm 
+                  ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' 
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+            >
+              {showReviewForm ? (
+                <>
+                  <X size={16} />
+                  Cancel
+                </>
+              ) : (
+                <>
+                  <Star size={16} />
+                  Add Review
+                </>
+              )}
+            </button>
           </div>
 
           {showReviewForm && isAuthenticated && (
-            <ReviewForm 
-              onSubmit={handleAddReview} 
-              onCancel={() => setShowReviewForm(false)} 
-            />
+            <div className="bg-white rounded-lg p-4 mb-6 shadow-sm border border-gray-200">
+              <ReviewForm 
+                onSubmit={handleAddReview} 
+                onCancel={() => setShowReviewForm(false)} 
+              />
+            </div>
           )}
 
           <ReviewList reviews={reviews} />
 
-          {isAuthenticated && (
-            <div className="mt-4">
+          <div className="mt-8 pt-4 border-t border-gray-200">
+            <div className="flex justify-end">
               <button 
-                onClick={() => setShowComplaintForm(!showComplaintForm)}
-                className="btn btn-danger"
+                onClick={handleComplaintButtonClick}
+                className={`flex items-center gap-2 rounded-md px-4 py-2 font-medium text-sm transition-all duration-200 ${
+                  showComplaintForm 
+                    ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' 
+                    : 'bg-red-600 text-white hover:bg-red-700'
+                }`}
               >
-                {showComplaintForm ? 'Cancel' : 'Report Complaint'}
+                {showComplaintForm ? (
+                  <>
+                    <X size={16} />
+                    Cancel
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle size={16} />
+                    Report Complaint
+                  </>
+                )}
               </button>
+            </div>
 
-              {showComplaintForm && (
+            {showComplaintForm && isAuthenticated && (
+              <div className="bg-white rounded-lg p-4 mt-4 shadow-sm border border-gray-200">
                 <ComplaintForm 
                   onSubmit={handleAddComplaint} 
                   onCancel={() => setShowComplaintForm(false)} 
                 />
-              )}
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
