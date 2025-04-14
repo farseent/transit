@@ -22,14 +22,16 @@ exports.getBusReviews = async (req, res) => {
 // Create a new review
 exports.createReview = async (req, res) => {
   try {
-    const { 
-      busId, 
-      cleanliness, 
-      punctuality, 
-      staffBehavior, 
-      comfort, 
-      comment 
-    } = req.body;
+    const busId = req.params.busId;
+    const { ratings, comment } = req.body;   
+    
+    // Validate that all required ratings are present
+    if (!ratings || !ratings.cleanliness || !ratings.punctuality || 
+      !ratings.staffBehavior || !ratings.comfort) {
+    return res.status(400).json({ 
+      message: 'All ratings (cleanliness, punctuality, staffBehavior, comfort) are required' 
+    });
+  }
     
     // Check if bus exists
     const bus = await Bus.findById(busId);
@@ -47,28 +49,23 @@ exports.createReview = async (req, res) => {
       return res.status(400).json({ message: 'Bus already reviewed' });
     }
     
-    // Calculate overall rating as average of category ratings
-    const overallRating = (
-      (cleanliness + punctuality + staffBehavior + comfort) / 4
-    ).toFixed(1);
-    
-    // Create new review
-    const review = await Review.create({
+    // Create new review with proper structure matching the schema
+     // Create new review
+     const review = await Review.create({
       user: req.user._id,
       bus: busId,
-      cleanliness,
-      punctuality,
-      staffBehavior,
-      comfort,
-      overallRating: parseFloat(overallRating),
+      ratings: {
+        cleanliness: ratings.cleanliness,
+        punctuality: ratings.punctuality,
+        staffBehavior: ratings.staffBehavior,
+        comfort: ratings.comfort
+      },
       comment
     });
     
-    // Update bus average ratings
-    await updateBusRatings(busId);
-    
     res.status(201).json(review);
   } catch (error) {
+    console.error('Review creation error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

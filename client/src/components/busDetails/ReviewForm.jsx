@@ -3,22 +3,19 @@ import Rating from '../common/Rating';
 
 const ReviewForm = ({ onSubmit, onCancel }) => {
   const [ratings, setRatings] = useState({
-    cleanlinessRating: 0,
-    punctualityRating: 0,
-    staffBehaviorRating: 0,
+    cleanliness: 0,  // Changed to match schema property names
+    punctuality: 0,
+    staffBehavior: 0,
+    comfort: 0,
   });
   const [comment, setComment] = useState('');
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const overallRating = 
-      (ratings.cleanlinessRating + 
-       ratings.punctualityRating + 
-       ratings.staffBehaviorRating) / 3;
-
+    
+    // Submit with the structure expected by your schema
     onSubmit({
-      ...ratings,
-      overallRating,
+      ratings,  // This matches your schema structure
       comment,
     });
   };
@@ -33,8 +30,8 @@ const ReviewForm = ({ onSubmit, onCancel }) => {
             Cleanliness
           </label>
           <Rating 
-            value={ratings.cleanlinessRating} 
-            onChange={(value) => setRatings(prev => ({ ...prev, cleanlinessRating: value }))} 
+            value={ratings.cleanliness} 
+            onChange={(value) => setRatings(prev => ({ ...prev, cleanliness: value }))} 
             size="md"
           />
         </div>
@@ -44,8 +41,8 @@ const ReviewForm = ({ onSubmit, onCancel }) => {
             Punctuality
           </label>
           <Rating 
-            value={ratings.punctualityRating} 
-            onChange={(value) => setRatings(prev => ({ ...prev, punctualityRating: value }))} 
+            value={ratings.punctuality} 
+            onChange={(value) => setRatings(prev => ({ ...prev, punctuality: value }))} 
             size="md"
           />
         </div>
@@ -55,8 +52,8 @@ const ReviewForm = ({ onSubmit, onCancel }) => {
             Staff Behavior
           </label>
           <Rating 
-            value={ratings.staffBehaviorRating} 
-            onChange={(value) => setRatings(prev => ({ ...prev, staffBehaviorRating: value }))} 
+            value={ratings.staffBehavior} 
+            onChange={(value) => setRatings(prev => ({ ...prev, staffBehavior: value }))} 
             size="md"
           />
         </div>
@@ -65,8 +62,8 @@ const ReviewForm = ({ onSubmit, onCancel }) => {
             Comfort
           </label>
           <Rating 
-            value={ratings.ComfortRating} 
-            onChange={(value) => setRatings(prev => ({ ...prev, ComfortRating: value }))} 
+            value={ratings.comfort} 
+            onChange={(value) => setRatings(prev => ({ ...prev, comfort: value }))} 
             size="md"
           />
         </div>
@@ -97,7 +94,7 @@ const ReviewForm = ({ onSubmit, onCancel }) => {
         <button 
           type="submit"
           className="px-4 py-2 bg-primary-500 text-white font-medium rounded-md hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!ratings.cleanlinessRating || !ratings.punctualityRating || !ratings.staffBehaviorRating}
+          disabled={!ratings.cleanliness || !ratings.punctuality || !ratings.staffBehavior || !ratings.comfort}
         >
           Submit Review
         </button>

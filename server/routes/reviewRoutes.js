@@ -9,10 +9,9 @@ const {
 const { protect } = require('../middleware/authMiddleware');
 
 // Public routes
-router.get('/:busId/reviews', getBusReviews); // Matches frontend call
+router.get('/:busId/reviews', getBusReviews);
 
 // Protected routes
-//use either when needed
 router.post('/:busId/reviews', protect, createReview);
 // router.post('/', protect, createReview);
 

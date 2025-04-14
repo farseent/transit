@@ -8,7 +8,7 @@ import axios from './axios';
  * @returns {Promise<Object>} Submitted complaint
  */
 export const addComplaint = async (busId, complaintData) => {
-  const response = await axios.post(`/buses/${busId}/complaints`, complaintData);
+  const response = await axios.post(`/complaints/${busId}`, complaintData);
   return response.data;
 };
 

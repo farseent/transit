@@ -1,6 +1,7 @@
 // complaintController.js
 const Complaint = require('../models/Complaint');
 const Bus = require('../models/Bus');
+const mongoose = require('mongoose');
 
 // Get all complaints for a bus
 exports.getBusComplaints = async (req, res) => {
@@ -29,7 +30,13 @@ exports.getBusComplaints = async (req, res) => {
 // Create a new complaint
 exports.createComplaint = async (req, res) => {
   try {
-    const { busId, complaintType, description } = req.body;
+    const { category, description } = req.body;
+    const busId = req.params.busId;
+    
+    // Validation
+    if (!mongoose.Types.ObjectId.isValid(busId)) {
+      return res.status(400).json({ message: 'Invalid bus ID format' });
+    }
     
     // Check if bus exists
     const bus = await Bus.findById(busId);
@@ -41,13 +48,14 @@ exports.createComplaint = async (req, res) => {
     const complaint = await Complaint.create({
       user: req.user._id,
       bus: busId,
-      complaintType,
+      category,
       description,
-      status: 'pending' // Default status
+      status: 'Pending' // Match the case in your enum
     });
     
     res.status(201).json(complaint);
   } catch (error) {
+    console.error('Complaint creation error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

@@ -1,14 +1,11 @@
 const Bus = require('../models/Bus');
 const Route = require('../models/Route');
-const Stop = require('../models/Stop');
 
 exports.searchBuses = async (req, res) => {
-  console.log('searchBuses controller was called');
-  console.log('Request body:', req.body);
 
   try {
     const { routeId, fromStopId, toStopId } = req.body;
-    console.log('Search parameters received:', { routeId, fromStopId, toStopId });
+
     // Get route with populated stops and their names
     const route = await Route.findById(routeId).populate({
       path: 'stops',
@@ -34,13 +31,9 @@ exports.searchBuses = async (req, res) => {
       return res.status(400).json({ message: 'From-stop must come before to-stop on the route' });
     }
     
-    // Find available buses for this route
-    const buses = await Bus.find({
-      route: routeId,
-      isAvailable: true
-    }).populate('owner', 'name');
+    // Find  buses for this route
+    const buses = await Bus.find({ route: routeId }).populate('owner', 'name');
     
-    console.log('Buses found for route:', buses);
     // Prepare results with names included
     const busResults = buses.map(bus => {
       const stopsBetween = toStopIndex - fromStopIndex;

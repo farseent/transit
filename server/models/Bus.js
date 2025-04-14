@@ -23,17 +23,12 @@ const BusSchema = new mongoose.Schema({
     required: true
   },
   // We'll store the schedule as departure times from the first stop
-  // schedules: [{
-  //   departureTime: {
-  //     type: String, // Format: "HH:MM" in 24-hour format
-  //     required: true
-  //   },
-  //   days: {
-  //     type: [String],
-  //     enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-  //     required: true
-  //   }
-  // }],
+  schedules: [{
+    departureTime: {
+      type: String, // Format: "HH:MM" in 24-hour format
+      required: true
+    }
+  }],
   isAvailable: {
     type: Boolean,
     default: true

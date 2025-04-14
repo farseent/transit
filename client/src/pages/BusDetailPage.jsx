@@ -50,13 +50,14 @@ const BusDetailPage = () => {
 
   const handleAddReview = async (reviewData) => {
     try {
+      // reviewData now has the correct structure with ratings: {cleanliness, punctuality, etc.}
       const response = await addReview(id, reviewData);
       setReviews([...reviews, response]);
       setShowReviewForm(false);
       setAlert({ type: 'success', message: 'Review submitted successfully!' });
       setTimeout(() => setAlert(null), 3000);
     } catch (err) {
-      setAlert({ type: 'danger', message: 'Failed to submit review' });
+      setAlert({ type: 'danger', message: err.message || 'Failed to submit review' });
       setTimeout(() => setAlert(null), 3000);
     }
   };
@@ -65,10 +66,10 @@ const BusDetailPage = () => {
     try {
       await addComplaint(id, complaintData);
       setShowComplaintForm(false);
-      setAlert({ type: 'success', message: 'Complaint submitted successfully!' });
+      setAlert({ type: 'success', message: 'Your complaint has been submitted successfully! We will review it shortly.' });
       setTimeout(() => setAlert(null), 3000);
     } catch (err) {
-      setAlert({ type: 'danger', message: 'Failed to submit complaint' });
+      setAlert({ type: 'danger', message: 'Failed to submit complaint. Please try again.' });
       setTimeout(() => setAlert(null), 3000);
     }
   };

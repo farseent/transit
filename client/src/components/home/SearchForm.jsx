@@ -38,11 +38,6 @@ const SearchForm = ({ stops, routeId, onSearch }) => {
       setError('Departure and destination stops cannot be the same.');
       return;
     }
-    console.log('Form values before submit:', { 
-      routeId, 
-      fromStop, 
-      toStop,
-    });
     setError('');
     onSearch({
       routeId,

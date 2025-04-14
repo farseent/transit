@@ -2,7 +2,6 @@ import React from 'react';
 import { Clock, DollarSign, MapPin, Bus, Star } from 'lucide-react';
 
 const BusInfo = ({ bus }) => {
-  console.log('bus data in busInfo:', bus);
 
   // Helper function to render star ratings
   const renderStarRating = (rating) => {

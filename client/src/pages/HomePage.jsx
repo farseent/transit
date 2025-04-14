@@ -21,7 +21,6 @@ const HomePage = () => {
       try {
         setLoading(true);
         const data = await getAllRoutes();
-        console.log('routes:',data);
         setRoutes(data);
       } catch (err) {
         setError('Failed to load routes');
