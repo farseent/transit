@@ -47,7 +47,7 @@ const HomePage = () => {
   };
 
   const handleSearch = async (searchData) => {
-    try {
+    try {      
       // Update URL first to trigger SearchContext's useEffect
       navigate(`/buses?routeId=${searchData.routeId}&fromStopId=${searchData.fromStop}&toStopId=${searchData.toStop}`);
       // Then perform the search (will be handled by SearchContext from URL params)

@@ -9,7 +9,7 @@ const BusList = ({ buses, routeId, fromStopId, toStopId }) => {
     <div className="space-y-4"> 
       {buses.map((bus) => (
         <BusCard 
-          key={bus._id} 
+          key={`${bus._id}-${bus.arrivalTime}`}
           bus={bus}
           routeId={routeId} 
           fromStopId={fromStopId}

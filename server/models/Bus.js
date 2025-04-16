@@ -1,3 +1,5 @@
+//busschema
+
 const mongoose = require('mongoose');
 
 const BusSchema = new mongoose.Schema({
@@ -5,7 +7,7 @@ const BusSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add a registration number'],
     unique: true,
-    trim: true
+    trim: true  
   },
   name: {
     type: String,

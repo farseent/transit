@@ -54,7 +54,6 @@ const BusCard = ({ bus, routeId, fromStopId, toStopId }) => {
           <div className="flex flex-col items-center">
             <span className="text-secondary-600 text-sm">Duration</span>
             <div className="flex items-center mt-1">
-              {/* <span className="font-semibold text-lg">55 min </span> */}
               <span className="font-semibold text-lg">{formatDuration(duration)}</span>
             </div>
             <div className="relative w-full mt-2 hidden md:block">
@@ -73,7 +72,6 @@ const BusCard = ({ bus, routeId, fromStopId, toStopId }) => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between pt-4 border-t border-secondary-100">
           <div className="mb-3 md:mb-0">
             <span className="text-secondary-600 mr-2">Fare:</span>
-            {/* <span className="text-xl font-bold text-primary-600">40</span> */}
             <span className="text-xl font-bold text-primary-600">{formatCurrency(fare)}</span>
           </div>
           
