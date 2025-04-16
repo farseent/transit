@@ -41,8 +41,8 @@ const SearchForm = ({ stops, routeId, onSearch }) => {
     setError('');
     onSearch({
       routeId,
-      fromStop,  // Change to match backend parameter names
-      toStop       // Change to match backend parameter names
+      fromStop,
+      toStop 
     });
   };
 

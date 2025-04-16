@@ -21,7 +21,7 @@ const BusCard = ({ bus, routeId, fromStopId, toStopId }) => {
   } = bus;
   
   const handleViewDetails = () => {    
-    navigate(`/buses/${_id}?routeId=${routeId}fromStopId=${fromStopId}&toStopId=${toStopId}`);
+    navigate(`/buses/${_id}?routeId=${routeId}&fromStopId=${fromStopId}&toStopId=${toStopId}`); 
   };
   
   return (

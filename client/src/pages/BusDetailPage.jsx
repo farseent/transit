@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Star, AlertCircle, X, MessageSquare } from 'lucide-react';
 import busApi from '../api/busApi';
-import { fetchBusReviews, addReview } from '../api/reviewApi';
+import { addReview } from '../api/reviewApi';
 import { addComplaint } from '../api/complaintApi';
 import { useAuth } from '../context/AuthContext';
 
@@ -16,12 +16,15 @@ import Alert from '../components/common/Alert';
 const BusDetailPage = () => {
   const { id } = useParams();
   const [searchParams] = useSearchParams();
-  const fromStop = searchParams.get('fromStop');
-  const toStop = searchParams.get('toStop');
+  const routeId = searchParams.get('routeId');
+  const fromStopId = searchParams.get('fromStopId');
+  const toStopId = searchParams.get('toStopId');
   const navigate = useNavigate();
   
   const { isAuthenticated } = useAuth();
   const [bus, setBus] = useState(null);
+  const [fromStop,setFromStop ] = useState(null);
+  const [toStop,setToStop ] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,9 +35,12 @@ const BusDetailPage = () => {
   useEffect(() => {
     const fetchBusDetails = async () => {
       try {
-        const busData = await busApi.fetchBusDetails(id);
+        setLoading(true);
+        const busData = await busApi.fetchBusDetails(id, routeId, fromStopId, toStopId);
         setBus(busData.bus);
         setReviews(busData.reviews || []);
+        setFromStop(busData.fromStop);
+        setToStop(busData.toStop);
         setLoading(false);
       } catch (err) {
         console.error('Error fetching bus details:', err);
@@ -43,10 +49,13 @@ const BusDetailPage = () => {
       }
     };
 
-    if (id) {
+    if (id && routeId && fromStopId && toStopId) {
       fetchBusDetails();
+    } else {
+      setError('Missing required information to fetch bus details.');
+      setLoading(false);
     }
-  }, [id]);
+  }, [id, routeId, fromStopId, toStopId]);
 
   const handleAddReview = async (reviewData) => {
     try {

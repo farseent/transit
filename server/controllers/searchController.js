@@ -86,14 +86,14 @@ exports.searchBuses = async (req, res) => {
         const arrivalTime = await bus.calculateArrivalTime(fromStopIndex, departureTime);
         const destinationTime = await bus.calculateArrivalTime(toStopIndex, departureTime);
     
-        console.log('---');
-        console.log('Bus:', bus.name);
-        console.log('Departure Time:', departureTime);
-        console.log('From Index:', fromStopIndex, 'To Index:', toStopIndex);
-        console.log('Arrival Time:', arrivalTime);
-        console.log('Current Time:', currentTimeString);
-        console.log('Compare Result:', compareTimeStrings(arrivalTime, currentTimeString));
-        console.log('---');
+        // console.log('---');
+        // console.log('Bus:', bus.name);
+        // console.log('Departure Time:', departureTime);
+        // console.log('From Index:', fromStopIndex, 'To Index:', toStopIndex);
+        // console.log('Arrival Time:', arrivalTime);
+        // console.log('Current Time:', currentTimeString);
+        // console.log('Compare Result:', compareTimeStrings(arrivalTime, currentTimeString));
+        // console.log('---');
 
 
         // if (compareTimeStrings(arrivalTime, currentTimeString) > 0) {

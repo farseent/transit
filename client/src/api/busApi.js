@@ -5,10 +5,16 @@ const busApi = {
   /**
    * Fetch details of a specific bus
    * @param {string} busId - ID of the bus
+   * @param {string} routeId - ID of the route
+   * @param {string} fromStopId - ID of the departure stop
+   * @param {string} toStopId - ID of the destination stop
    * @returns {Promise<Object>} Bus details
    */
-  fetchBusDetails: async (busId) => {
-    const response = await axios.get(`/buses/${busId}`);
+  fetchBusDetails: async (busId, routeId, fromStopId, toStopId) => {
+    
+    const response = await axios.get(`/buses/${busId}`, {
+      params: { routeId, fromStopId, toStopId }
+    });
     return response.data;
   },
 
