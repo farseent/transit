@@ -151,7 +151,7 @@ exports.getUserProfile = async (req, res) => {
 
 exports.getUserReviews = async (req, res) => {
   try {
-    const reviews = await Review.find({ user: req.user._id });
+    const reviews = await Review.find({ user: req.user._id }).populate('bus', 'name regNumber'); ;
     res.json(reviews);
   } catch (error) {
     console.error('Error fetching user reviews:', error);
@@ -161,7 +161,7 @@ exports.getUserReviews = async (req, res) => {
 
 exports.getUserComplaints = async (req, res) => {
   try {
-    const complaints = await Complaint.find({ user: req.user._id });
+    const complaints = await Complaint.find({ user: req.user._id }).populate('bus', 'name regNumber'); ;
     res.json(complaints);
   } catch (error) {
     console.error('Error fetching user complaints:', error);

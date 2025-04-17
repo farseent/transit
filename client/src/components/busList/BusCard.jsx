@@ -89,16 +89,25 @@ const BusCard = ({ bus, routeId, fromStopId, toStopId }) => {
           
           <button
             onClick={handleViewDetails}
-            disabled={!isAvailable}
+            // aria-label={isAvailable ? "View bus details" : "Bus not available"}
+            className="px-4 py-2 rounded-md text-white font-medium transition-colors w-full sm:w-auto bg-primary-500 hover:bg-primary-600">
+            View Details
+          </button>
+          {/* <button
+            onClick={handleViewDetails}
+            // disabled={!isAvailable}
             aria-label={isAvailable ? "View bus details" : "Bus not available"}
-            className={`px-4 py-2 rounded-md text-white font-medium transition-colors w-full sm:w-auto ${
+            className={`px-4 py-2 rounded-md text-white font-medium transition-colors w-full sm:w-auto 
+              ${
               isAvailable 
                 ? 'bg-primary-500 hover:bg-primary-600' 
                 : 'bg-secondary-400 cursor-not-allowed'
-            }`}
+            }
+            `
+          }
           >
             {isAvailable ? 'View Details' : 'Not Available'}
-          </button>
+          </button> */}
         </div>
       </div>
     </div>
