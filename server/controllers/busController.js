@@ -18,12 +18,13 @@ exports.getAllBuses = async (req, res) => {
 exports.getBusById = async (req, res) => {
   try {
     // Extract query parameters
-    const { routeId, fromStopId, toStopId } = req.query;
+    const { routeId, fromStopId, toStopId, arrivalTime } = req.query;
     console.log('Request received in getBusById:', { 
       busId: req.params.id, 
       routeId, 
       fromStopId, 
-      toStopId 
+      toStopId,
+      arrivalTime 
     });
 
     // Find the bus by ID
@@ -84,15 +85,30 @@ exports.getBusById = async (req, res) => {
       // Calculate journey duration
       const journeyDuration = route.calculateTime(fromStopIndex, toStopIndex);
 
-      // Calculate arrival times at both stops
-      // Use the first schedule (you might want to be more specific)
+      // Find the specific schedule that matches the arrivalTime
+      let matchedSchedule = null;
       if (bus.schedules && bus.schedules.length > 0) {
-        const departureTime = bus.schedules[0].departureTime;
-        const arrivalTime = await bus.calculateArrivalTime(fromStopIndex, departureTime);
+        for (const schedule of bus.schedules) {
+          const scheduleArrivalTime = await bus.calculateArrivalTime(fromStopIndex, schedule.departureTime);
+          
+          if (scheduleArrivalTime === arrivalTime) {
+            matchedSchedule = schedule;
+            break;
+          }
+        }
+        
+        // If specific arrival time not found, just use the first schedule
+        if (!matchedSchedule && arrivalTime) {
+          console.log('Warning: Could not find schedule with arrival time', arrivalTime);
+        }
+        
+        // Use either the matched schedule or the first one
+        const departureTime = matchedSchedule ? matchedSchedule.departureTime : bus.schedules[0].departureTime;
+        const calculatedArrivalTime = await bus.calculateArrivalTime(fromStopIndex, departureTime);
         const destinationTime = await bus.calculateArrivalTime(toStopIndex, departureTime);
         
         journeyData = {
-          arrivalTime,
+          arrivalTime: calculatedArrivalTime,
           destinationTime,
           duration: journeyDuration,
           fare
