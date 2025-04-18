@@ -217,13 +217,22 @@ exports.toggleBusAvailability = async (req, res) => {
 // Get buses owned by current user (for bus owners)
 exports.getMyBuses = async (req, res) => {
   try {
+    console.log("[BACKEND] User ID:", req.user._id); // Debug log
+    
     if (req.user.role !== 'owner') {
+      console.log('Unauthorized access attempt by:', req.user.role);
       return res.status(403).json({ message: 'Not authorized as a bus owner' });
     }
     
-    const buses = await Bus.find({ owner: req.user._id });
-    res.json(buses);
+    console.log('Fetching buses for owner ID:', req.user._id);
+    const buses = await Bus.find({ owner: req.user._id }).populate('route', 'name');
+    console.log("[BACKEND] Found buses:", buses.length); // Debug log
+    console.log('Found buses:', buses); // Debug log
+
+    // Make sure to send response
+    res.status(200).json(buses); // Explicit status code
   } catch (error) {
+    console.error('Error in getMyBuses:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

@@ -30,7 +30,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
         message: 'User not found' 
       });
     }
-
+    console.log("[MIDDLEWARE] Authenticated user:", req.user?._id); // Debug log
     next();
   } catch (err) {
     console.error('Token error:', err.message); // Log specific error
@@ -44,6 +44,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
 // Grant access to specific roles
 exports.authorize = (...roles) => {
   return (req, res, next) => {
+    console.log("[AUTHORIZE] Checking role:", req.user?.role); // Debug log
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,

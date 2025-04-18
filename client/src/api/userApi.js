@@ -12,6 +12,7 @@ import axiosInstance from './axios';
 export const login = async (credentials) => {
   console.log('Sending registration data:', credentials);
   const response = await axiosInstance.post('/users/login', credentials);
+  console.log('Login API response:', response.data); // Add this
   return response.data;
 };
 

@@ -1,137 +1,226 @@
-import { ChartBarIcon, UsersIcon, CogIcon, DocumentTextIcon, ShoppingCartIcon, BellIcon } from '@heroicons/react/24/outline';
+// pages/OwnerDashboardPage.jsx
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import busApi from '../api/busApi';
+import BusCard from '../components/owner/BusCard';
+import Loader from '../components/common/Loader';
+import Alert from '../components/common/Alert';
+import { useAuth } from '../context/AuthContext';
 
 const OwnerDashboardPage = () => {
-  
-  // Mock data - replace with actual API calls
-  const stats = [
-    { name: 'Total Revenue', value: '$12,345', change: '+12%', changeType: 'positive' },
-    { name: 'Active Users', value: '1,234', change: '+5%', changeType: 'positive' },
-    { name: 'Pending Orders', value: '56', change: '-3%', changeType: 'negative' },
-    { name: 'New Messages', value: '24', change: '+8%', changeType: 'positive' },
-  ];
+  const [buses, setBuses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [filterStatus, setFilterStatus] = useState('all'); // 'all', 'available', 'unavailable'
+  const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
-  const recentActivity = [
-    { id: 1, user: 'John Doe', action: 'placed a new order', time: '2 min ago', read: false },
-    { id: 2, user: 'Sarah Smith', action: 'updated payment method', time: '10 min ago', read: true },
-    { id: 3, user: 'Mike Johnson', action: 'requested a refund', time: '25 min ago', read: false },
-    { id: 4, user: 'Emily Wilson', action: 'submitted a review', time: '1 hour ago', read: true },
-  ];
+  useEffect(() => {
+    const fetchBuses = async () => {
+      try {
+        console.log("[DEBUG] Starting fetch...");
+        const data = await busApi.getOwnerBuses();
+        console.log('[DEBUG] Received data', data);
+        
+        if (!Array.isArray(data)) {
+          console.error("[ERROR] Expected array but got:", typeof data);
+          throw new Error("Invalid data format");
+        }
+        
+        setBuses(data);
+      } catch (err) {
+        console.error("[ERROR] Fetch failed:", err);
+        setError(err.message || 'Failed to fetch buses');
+      } finally {
+        setLoading(false);
+      }
+    };
+   
+    fetchBuses();
+  }, []);
 
-  const quickActions = [
-    { icon: UsersIcon, name: 'Manage Users', href: '#', count: 5 },
-    { icon: ShoppingCartIcon, name: 'Process Orders', href: '#', count: 12 },
-    { icon: DocumentTextIcon, name: 'View Reports', href: '#' },
-    { icon: CogIcon, name: 'Settings', href: '#' },
-  ];
+  const handleToggleAvailability = async (busId) => {
+    try {
+      setLoading(true);
+      const updatedBus = await busApi.toggleBusAvailability(busId);
+      setBuses(buses.map(bus =>
+        bus._id === updatedBus._id ? updatedBus : bus
+      ));
+      
+      // Show success feedback
+      setError({ type: 'success', message: `Bus ${updatedBus.name} status updated successfully!` });
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setError(null), 3000);
+    } catch (err) {
+      setError({ type: 'error', message: err.message || 'Failed to update bus availability' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewDetails = (busId) => {
+    navigate(`/bus/${busId}`);
+  };
+
+  // Filter buses based on status and search term
+  const filteredBuses = buses.filter(bus => {
+    const matchesFilter = 
+      filterStatus === 'all' || 
+      (filterStatus === 'available' && bus.isAvailable) || 
+      (filterStatus === 'unavailable' && !bus.isAvailable);
+      
+    const matchesSearch = 
+      bus.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      bus.regNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (bus.route?.name?.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+    return matchesFilter && matchesSearch;
+  });
+
+  if (loading && buses.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-secondary-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-secondary-900">Owner Dashboard</h1>
-          <div className="flex items-center space-x-4">
-            <button className="p-1 rounded-full text-secondary-400 hover:text-secondary-500 relative">
-              <BellIcon className="h-6 w-6" />
-              <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-danger-500"></span>
-            </button>
-            <div className="flex items-center">
-              <img 
-                className="h-8 w-8 rounded-full bg-primary-100" 
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" 
-                alt="User profile" 
-              />
-              <span className="ml-2 text-sm font-medium text-secondary-700">Owner</span>
+    <div className="bg-gray-50 min-h-screen pb-12">
+      <div className="bg-blue-600 text-white p-6 mb-8">
+        <div className="container mx-auto">
+          <h1 className="text-3xl font-bold">Owner Dashboard</h1>
+          <p className="mt-2 opacity-80">Manage your bus fleet</p>
+          <div className="flex items-center mt-4">
+            <div className="h-10 w-10 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-bold mr-3">
+              {user?.name?.charAt(0).toUpperCase() || 'O'}
+            </div>
+            <div>
+              <p className="font-medium">{user?.name || 'Owner'}</p>
+              <p className="text-sm opacity-80">{user?.email || 'owner@example.com'}</p>
             </div>
           </div>
         </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        {/* Stats */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-          {stats.map((stat) => (
-            <div key={stat.name} className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 bg-primary-500 rounded-md p-3">
-                    <ChartBarIcon className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dt className="text-sm font-medium text-secondary-500 truncate">{stat.name}</dt>
-                    <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-secondary-900">{stat.value}</div>
-                      <div className={`ml-2 flex items-baseline text-sm font-semibold ${
-                        stat.changeType === 'positive' ? 'text-success' : 'text-danger'
-                      }`}>
-                        {stat.change}
-                      </div>
-                    </dd>
-                  </div>
-                </div>
-              </div>
+      </div>
+      
+      <div className="container mx-auto px-4">
+        {/* Filters and search */}
+        <div className="bg-white p-4 rounded-lg shadow mb-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="w-full md:w-auto flex flex-col sm:flex-row gap-2">
+              <button 
+                onClick={() => setFilterStatus('all')}
+                className={`px-4 py-2 rounded-md ${
+                  filterStatus === 'all' 
+                    ? 'bg-blue-100 text-blue-700 font-medium' 
+                    : 'bg-gray-100 text-gray-600'
+                }`}
+              >
+                All Buses
+              </button>
+              <button 
+                onClick={() => setFilterStatus('available')}
+                className={`px-4 py-2 rounded-md ${
+                  filterStatus === 'available' 
+                    ? 'bg-green-100 text-green-700 font-medium' 
+                    : 'bg-gray-100 text-gray-600'
+                }`}
+              >
+                Available
+              </button>
+              <button 
+                onClick={() => setFilterStatus('unavailable')}
+                className={`px-4 py-2 rounded-md ${
+                  filterStatus === 'unavailable' 
+                    ? 'bg-red-100 text-red-700 font-medium' 
+                    : 'bg-gray-100 text-gray-600'
+                }`}
+              >
+                Unavailable
+              </button>
             </div>
+            
+            <div className="relative w-full md:w-64">
+              <input
+                type="text"
+                placeholder="Search buses..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        
+        {/* Alerts */}
+        {error && (
+          <Alert 
+            type={error.type || "error"} 
+            message={error.message} 
+            className="mb-6" 
+          />
+        )}
+        
+        {/* Summary stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white p-4 rounded-lg shadow">
+            <h3 className="text-lg font-medium text-gray-700">Total Buses</h3>
+            <p className="text-3xl font-bold text-blue-600 mt-2">{buses.length}</p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow">
+            <h3 className="text-lg font-medium text-gray-700">Available</h3>
+            <p className="text-3xl font-bold text-green-600 mt-2">
+              {buses.filter(bus => bus.isAvailable).length}
+            </p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow">
+            <h3 className="text-lg font-medium text-gray-700">Unavailable</h3>
+            <p className="text-3xl font-bold text-red-600 mt-2">
+              {buses.filter(bus => !bus.isAvailable).length}
+            </p>
+          </div>
+        </div>
+        
+        {/* Bus cards */}
+        <h2 className="text-xl font-semibold mb-4">My Buses</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredBuses.map(bus => (
+            <BusCard
+              key={bus._id}
+              bus={bus}
+              onToggleAvailability={handleToggleAvailability}
+              onViewDetails={handleViewDetails}
+            />
           ))}
         </div>
-
-        {/* Quick Actions */}
-        <div className="mb-8">
-          <h2 className="text-lg font-medium text-secondary-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {quickActions.map((action) => (
-              <div key={action.name} className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition duration-150">
-                <div className="px-4 py-5 sm:p-6 cursor-pointer">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 bg-primary-100 rounded-md p-3">
-                      <action.icon className="h-6 w-6 text-primary-600" />
-                    </div>
-                    <div className="ml-5 w-0 flex-1">
-                      <dt className="text-sm font-medium text-secondary-500 truncate">{action.name}</dt>
-                      {action.count && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-danger-100 text-danger-800">
-                          {action.count}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
+        
+        {filteredBuses.length === 0 && (
+          <div className="bg-white p-8 rounded-lg shadow text-center">
+            {searchTerm || filterStatus !== 'all' ? (
+              <div>
+                <p className="text-gray-500 text-lg">No buses match your search criteria.</p>
+                <button 
+                  onClick={() => {
+                    setSearchTerm('');
+                    setFilterStatus('all');
+                  }}
+                  className="mt-3 text-blue-500 hover:text-blue-700"
+                >
+                  Clear filters
+                </button>
               </div>
-            ))}
+            ) : (
+              <p className="text-gray-500 text-lg">You don't have any buses registered yet.</p>
+            )}
           </div>
-        </div>
-
-        {/* Recent Activity */}
-        <div className="bg-white shadow rounded-lg overflow-hidden">
-          <div className="px-4 py-5 sm:px-6 border-b border-secondary-200">
-            <h3 className="text-lg leading-6 font-medium text-secondary-900">Recent Activity</h3>
-          </div>
-          <ul className="divide-y divide-secondary-200">
-            {recentActivity.map((activity) => (
-              <li key={activity.id} className={`px-4 py-4 sm:px-6 ${!activity.read ? 'bg-primary-50' : ''}`}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    {!activity.read && (
-                      <span className="h-2 w-2 rounded-full bg-primary-500 mr-2"></span>
-                    )}
-                    <p className="text-sm font-medium text-primary-600 truncate">
-                      {activity.user} <span className="text-secondary-500 font-normal">{activity.action}</span>
-                    </p>
-                  </div>
-                  <div className="ml-2 flex-shrink-0 flex">
-                    <p className="text-xs text-secondary-500">{activity.time}</p>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <div className="bg-secondary-50 px-4 py-4 sm:px-6 text-center">
-            <button className="text-sm font-medium text-primary-600 hover:text-primary-500">
-              View all activity
-            </button>
-          </div>
-        </div>
-      </main>
+        )}
+      </div>
     </div>
   );
 };

@@ -35,15 +35,15 @@ function App() {
               <Route 
                 path="/profile" 
                 element={
-                  <ProtectedRoute>
+                  <ProtectedRoute allowedRoles={['user']}>
                     <ProfilePage />
                   </ProtectedRoute>
                 } 
               />
               <Route 
-                path="/owner-dashboard" 
+                path="/owner/dashboard" 
                 element={
-                  <ProtectedRoute requireOwner={true}>
+                  <ProtectedRoute allowedRoles={['owner']}>
                     <OwnerDashboardPage />
                   </ProtectedRoute>
                 } 

@@ -26,7 +26,7 @@ const Navbar = () => {
   const authMenuItems = isAuthenticated 
     ? [
         { name: 'Profile', path: '/profile' },
-        user?.role === 'owner' && { name: 'Owner Dashboard', path: '/owner-dashboard' }
+        user?.role === 'owner' && { name: 'Owner Dashboard', path: '/owner/dashboard' }
       ].filter(Boolean)
     : [
         { name: 'Login', path: '/login' },

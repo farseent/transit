@@ -1,3 +1,4 @@
+//AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { login as apiLogin, register as apiRegister, logout as apiLogout, getProfile } from '../api/userApi';
 import { saveToken, getToken, removeToken } from '../utils/localStorage';
@@ -42,18 +43,30 @@ export const AuthProvider = ({ children }) => {
   }, []);
   
   const login = async (userData) => {
+    setLoading(true);
     try {
       const response = await apiLogin(userData);
+      //-------------
+      console.log('Full login response:', response); // Add this
+      //-------------
       saveToken(response.token);
-      setUser(response.user);
+      const user = {
+        _id: response._id,
+        name: response.name,
+        email: response.email,
+        role: response.role
+      };
+      setUser(user);
       setAuthState({
         token: response.token,
         isAuthenticated: true
       });
-      return response.user;
+      return user;
     } catch (err) {
       setError(err.message || 'Login failed');
       throw err;
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -62,11 +75,14 @@ export const AuthProvider = ({ children }) => {
       const response = await apiRegister(userData);
       if (response.token) {
         saveToken(response.token);
-        setUser(response.user || { 
-          name: userData.name, 
-          email: userData.email,
-          role: 'user' 
-        });
+        // Create user object from response
+        const user = {
+          _id: response._id,
+          name: response.name || userData.name,
+          email: response.email || userData.email,
+          role: response.role || 'user' // Default to 'user' if not provided
+        };
+        setUser(user);
         setAuthState({
           token: response.token,
           isAuthenticated: true

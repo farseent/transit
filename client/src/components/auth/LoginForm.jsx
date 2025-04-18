@@ -1,3 +1,4 @@
+//loginform
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Button from '../common/Button';
@@ -24,13 +25,22 @@ const LoginForm = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
+  
     try {
-      await login({
-        email:formData.email,
-        password:formData.password });
-      navigate(-1); // Redirect back to the previous page
+      const response = await login({  
+        email: formData.email,  
+        password: formData.password  
+      });
+      
+      console.log('Login response in form:', response); // Debugging log
+      
+      if (response?.role === 'owner') {
+        navigate('/owner/dashboard');
+      } else {
+        navigate(-1);
+      }
     } catch (err) {
+      console.error('Login error:', err); // Debugging log
       setError(err.response?.data?.message || 'Failed to log in. Please check your credentials.');
     } finally {
       setLoading(false);

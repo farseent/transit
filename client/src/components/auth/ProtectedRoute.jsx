@@ -4,16 +4,17 @@ import { useAuth } from '../../context/AuthContext';
 import Loader from '../common/Loader';
 
 /**
- * A wrapper component for routes that require authentication
+ * A wrapper component for routes that require authentication and specific roles
  * Redirects to login page if user is not authenticated
+ * Redirects to unauthorized page if user doesn't have required role
  * 
  * @param {Object} props
- * @param {React.ReactNode} props.children - The components to render if authenticated
- * @param {boolean} props.requireOwner - If true, route requires owner role
+ * @param {React.ReactNode} props.children - The components to render if authorized
+ * @param {Array<string>} [props.allowedRoles] - Array of allowed roles (e.g., ['user', 'owner'])
  * @returns {React.ReactNode}
  */
-const ProtectedRoute = ({ children, requireOwner = false }) => {
-  const { isAuthenticated, isOwner, loading } = useAuth();
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const { isAuthenticated, user, loading } = useAuth();
   const location = useLocation();
 
   // Show loader while checking authentication status
@@ -23,15 +24,19 @@ const ProtectedRoute = ({ children, requireOwner = false }) => {
 
   // If not authenticated, redirect to login with return path
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // If owner access is required but user is not an owner
-  if (requireOwner && !isOwner) {
-    return <Navigate to="/unauthorized" replace />;
+  // Check if route requires specific roles and user has one of them
+  if (allowedRoles && allowedRoles.length > 0) {
+    const hasRequiredRole = allowedRoles.includes(user?.role);
+    
+    if (!hasRequiredRole) {
+      return <Navigate to="/unauthorized" replace />;
+    }
   }
 
-  // User is authenticated (and is owner if required), render children
+  // User is authenticated and has required role (if specified), render children
   return children;
 };
 
