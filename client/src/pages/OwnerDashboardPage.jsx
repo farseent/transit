@@ -61,7 +61,7 @@ const OwnerDashboardPage = () => {
   };
 
   const handleViewDetails = (busId) => {
-    navigate(`/bus/${busId}`);
+    navigate(`/owner/buses/${busId}`);
   };
 
   // Filter buses based on status and search term

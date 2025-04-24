@@ -18,6 +18,7 @@ const routeRoutes = require('./routes/routeRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 const complaintRoutes = require('./routes/complaintRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 
@@ -76,6 +77,7 @@ app.use('/api/routes', routeRoutes);
 app.use('/api/buses', reviewRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/complaints', complaintRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

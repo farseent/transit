@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { SearchProvider } from './context/SearchContext';
+import { AdminProvider } from './context/AdminContext';
 import Layout from './components/layout/Layout';
 
 // Pages 
@@ -21,20 +22,24 @@ import UserRoutes from './routes/UserRoutes';
 import OwnerRoutes from './routes/OwnerRoutes';
 import PublicRoute from './components/protected/PublicRoute';
 
+//Adminpages
+
 function App() {
   return (
     <Router>
       <AuthProvider>
         <SearchProvider>
+          <AdminProvider>
           <Layout>
             <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/unauthorized" element={<UnauthorizedPage />} />
+
               <Route path="/" element={<PublicRoute><HomePage /></PublicRoute>} />
               <Route path="/buses" element={<PublicRoute><BusListPage /></PublicRoute>} />
               <Route path="/buses/:id" element={<PublicRoute><BusDetailPage /></PublicRoute>} />
-              <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-              <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
 
-              <Route path="/unauthorized" element={<UnauthorizedPage />} />
               {/* USER ROUTES */}
               <Route element={<UserProtectedRoute />}>
                 {UserRoutes.map(({ path, element }, idx) => (
@@ -48,9 +53,12 @@ function App() {
                   <Route key={idx} path={path} element={element} />
                 ))}
               </Route>
+
+
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Layout>
+          </AdminProvider>
         </SearchProvider>
       </AuthProvider>
     </Router>

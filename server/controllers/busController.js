@@ -236,3 +236,59 @@ exports.getMyBuses = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+
+
+// Add this function to the existing controller
+exports.getOwnerBusDetail = async (req, res) => {
+  try {
+    const { busId } = req.params;
+    console.log(`[BUS CONTROLLER] Fetching bus details for busId: ${busId}, owner: ${req.user._id}`); // DeBuG
+
+    // Verify that the bus belongs to the owner
+    const bus = await Bus.findOne({ 
+      _id: busId, 
+      owner: req.user._id 
+    }).populate('route');
+
+    console.log(`[BUS CONTROLLER] Bus found:`, bus ? 'Yes' : 'No'); // DeBuG
+    
+    if (!bus) {
+      return res.status(404).json({ message: 'Bus not found or you do not have permission to view this bus' });
+    }
+    
+    // Get all reviews for this bus
+    const reviews = await Review.find({ bus: busId })
+      .populate('user', 'name email')
+      .sort({ createdAt: -1 });
+    
+    // Prepare rating categories based on actual schema
+    const ratingCategories = ['cleanliness', 'punctuality', 'staffBehavior', 'comfort', 'overall'];
+    const categoryRatings = {};
+    
+    // Use the pre-calculated ratings from the bus schema
+    ratingCategories.forEach(category => {
+      categoryRatings[category] = parseFloat(bus.ratings[category]);
+    });
+    
+    // Get recent complaints
+    // const complaints = await Complaint.find({ bus: busId })
+    //   .populate('user', 'name')
+    //   .sort({ createdAt: -1 })
+    //   .limit(5);
+    
+    const responseData = {
+      bus,
+      reviews,
+      categoryRatings,
+      complaints,
+      totalReviews: bus.ratingCounts?.overall || 0
+    };
+    
+    console.log(`[BUS CONTROLLER] Sending response with data`); // DeBuG
+    res.status(200).json(responseData);
+  } catch (error) {
+    console.error(`[BUS CONTROLLER] Error:`, error); // DeBuG
+    res.status(500).json({ message: 'Error fetching bus details', error: error.message });
+  }
+};

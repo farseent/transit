@@ -53,7 +53,20 @@ const busApi = {
       });
       throw error;
     }
-  }
+  },
+
+  getOwnerBusById: async (busId) =>{
+    try {
+      console.log('sending request with busId',busId);
+      
+      const response = await axios.get(`/buses/owner/${busId}`);
+      console.log('recieved data in busapi',response.data);
+      return response.data; // Return the bus data
+    } catch (error) {
+      console.error('[ERROR] getOwnerBusById:', error);
+      throw error.response?.data || { message: 'Failed to fetch bus details' };
+    }
+  },
 };
 
 export default busApi;
