@@ -14,9 +14,10 @@ export const AdminProvider = ({ children }) => {
   const fetchSystemStats = async () => {
     try {
       setLoading(true);
-      const data = await adminApi.getSystemStats();
-      setStats(data.stats);
-      setActivityLog(data.recentActivity);
+      const response = await adminApi.getSystemStats();
+      // console.log('data received in admin context:', response.data);
+      setStats(response.data.stats);
+      setActivityLog(response.data.recentActivity);
     } catch (err) {
       setError(err.message);
     } finally {

@@ -3,15 +3,12 @@ import axios from './axios';
 export default {
   // User Management
   getUsers: (params) => axios.get('/admin/users', { params }),
-  updateUserRole: (userId, role) => 
-    axios.put(`/admin/users/${userId}/role`, { role }),
-  toggleUserStatus: (userId) => 
-    axios.put(`/admin/users/${userId}/status`),
+  updateUserRole: (userId, role) => axios.put(`/admin/users/${userId}/role`, { role }),
+  toggleUserStatus: (userId) => axios.put(`/admin/users/${userId}/status`),
 
   // Bus Management
   createBus: (busData) => axios.post('/admin/buses', busData),
-  assignBusToOwner: (busId, ownerId) => 
-    axios.put(`/admin/buses/${busId}/owner`, { ownerId }),
+  assignBusToOwner: (busId, ownerId) =>  axios.put(`/admin/buses/${busId}/owner`, { ownerId }),
 
   // Route Management
   createRoute: (routeData) => axios.post('/admin/routes', routeData),

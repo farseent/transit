@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useAdmin } from '../../context/AdminContext';
 import adminApi from '../../api/adminApi';
-import UserList from '../../components/admin/UserManagement/UserList';
-import UserForm from '../../components/admin/UserManagement/UserForm';
-import RoleManager from '../../components/admin/UserManagement/RoleManager';
+import UserList from '../../components/admin/UserManagment/UserList';
+import UserForm from '../../components/admin/UserManagment/UserForm';
 import Loader from '../../components/common/Loader';
 import Alert from '../../components/common/Alert';
 import Pagination from '../../components/common/Pagination';
@@ -24,8 +22,7 @@ const UserManagementPage = () => {
   });
   const [filters, setFilters] = useState({
     role: '',
-    search: '',
-    isActive: ''
+    search: ''
   });
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserDetails, setShowUserDetails] = useState(false);
@@ -46,12 +43,12 @@ const UserManagementPage = () => {
         if (params[key] === '') delete params[key];
       });
 
-      const data = await adminApi.getUsers(params);
-      setUsers(data.users);
+      const response = await adminApi.getUsers(params);
+      setUsers(response.data.users);
       setPagination(prev => ({
         ...prev,
-        totalPages: data.totalPages,
-        totalUsers: data.totalCount
+        totalPages: response.data.totalPages,
+        totalUsers: response.data.totalCount
       }));
     } catch (err) {
       setError(err.response?.data?.message || err.message);
@@ -137,22 +134,6 @@ const UserManagementPage = () => {
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold">User Management</h1>
-      
-      <div className="flex justify-between items-center">
-        <p className="text-sm text-gray-600">
-          {pagination.totalUsers > 0 ? (
-            `Showing ${(pagination.page - 1) * pagination.limit + 1}-${Math.min(pagination.page * pagination.limit, pagination.totalUsers)} of ${pagination.totalUsers} users`
-          ) : 'No users found'}
-        </p>
-        <Button
-          onClick={() => setShowCreateModal(true)}
-          variant="primary"
-          size="sm"
-        >
-          Create New User
-        </Button>
-      </div>
-      
       <div className="bg-white p-4 rounded-lg shadow">
         <div className="flex flex-col md:flex-row gap-4 mb-4">
           <select
@@ -165,17 +146,7 @@ const UserManagementPage = () => {
             <option value="owner">Owners</option>
             <option value="admin">Admins</option>
           </select>
-          
-          <select
-            className="p-2 border rounded flex-1 md:flex-none md:w-48"
-            value={filters.isActive}
-            onChange={(e) => setFilters({ ...filters, isActive: e.target.value })}
-          >
-            <option value="">All Statuses</option>
-            <option value="true">Active</option>
-            <option value="false">Inactive</option>
-          </select>
-          
+        
           <input
             type="text"
             placeholder="Search by name or email..."

@@ -10,9 +10,12 @@ import { useAuth } from "../../context/AuthContext";
 const PublicRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
 
-  if (isAuthenticated && user?.role === "owner") {
+  if  (isAuthenticated && user?.role === "owner")  {
     // If owner tries to visit public page, redirect to owner dashboard
     return <Navigate to="/owner/dashboard" replace />;
+  }
+  else if (isAuthenticated && user?.role === "admin"){
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   // Else allow to view the page

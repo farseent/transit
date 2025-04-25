@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import adminApi from '../../api/adminApi';
-import BusList from '../../components/admin/BusManagement/BusList';
-import BusForm from '../../components/admin/BusManagement/BusForm';
+import BusList from '../../components/admin/BusManagment/BusList';
+import BusForm from '../../components/admin/BusManagment/BusForm';
 import Loader from '../../components/common/Loader';
 import Alert from '../../components/common/Alert';
 import Modal from '../../components/common/Modal';
 import Button from '../../components/common/Button';
+import Pagination from '../../components/common/Pagination';
 
 const BusManagementPage = () => {
   const [buses, setBuses] = useState([]);
   const [owners, setOwners] = useState([]);
+  const [routes, setRoutes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -24,14 +26,23 @@ const BusManagementPage = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await adminApi.getBuses({
+      const response = await adminApi.getBuses({
         page: pagination.page,
         limit: pagination.limit
       });
-      setBuses(data.buses);
+      // console.log('data received in busManagementpage =', response);
+  
+      const buses = response.data; // <- correct path
+      if (Array.isArray(buses)) {
+        setBuses(buses);
+      } else {
+        setBuses([]);
+      }
+  
+      // totalPages is probably not available in this structure, so default it
       setPagination(prev => ({
         ...prev,
-        totalPages: data.totalPages
+        totalPages: 1 // You can update this if your backend provides it elsewhere
       }));
     } catch (err) {
       setError(err.response?.data?.message || err.message);
@@ -39,15 +50,27 @@ const BusManagementPage = () => {
       setLoading(false);
     }
   };
+  
 
   const fetchOwners = async () => {
     try {
-      const data = await adminApi.getOwners();
-      setOwners(data);
+      const response = await adminApi.getOwners();
+      // console.log('owners response:', response); // Check what's inside
+      setOwners(response.data); // Assuming response.data is the array
     } catch (err) {
       console.error('Failed to fetch owners:', err);
     }
   };
+
+  const fetchRoutes = async () => {
+    try {
+      const response = await adminApi.getRoutes();
+      setRoutes(response.data)
+    } catch (err) {
+      console.log('Failed to fetch routes:',err);
+    }
+  }
+  
 
   const handleCreateBus = async (busData) => {
     try {
@@ -81,6 +104,7 @@ const BusManagementPage = () => {
   useEffect(() => {
     fetchBuses();
     fetchOwners();
+    fetchRoutes();
   }, [pagination.page]);
 
   return (
@@ -131,6 +155,8 @@ const BusManagementPage = () => {
         <BusForm 
           onSubmit={handleCreateBus} 
           onCancel={() => setShowForm(false)}
+          owners={owners}  // Pass owners as a prop
+          routes={routes}  // Pass routes as a prop
         />
       </Modal>
     </div>

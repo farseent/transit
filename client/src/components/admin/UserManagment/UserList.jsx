@@ -1,5 +1,5 @@
 import RoleManager from './RoleManager';
-import Button from '../../common/Button';
+// import Button from '../../common/Button';
 
 const UserList = ({ users, onRoleChange, onStatusToggle, onViewDetails }) => {
   return (
@@ -9,8 +9,8 @@ const UserList = ({ users, onRoleChange, onStatusToggle, onViewDetails }) => {
           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+          {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th> */}
         </tr>
       </thead>
       <tbody className="bg-white divide-y divide-gray-200">
@@ -38,7 +38,7 @@ const UserList = ({ users, onRoleChange, onStatusToggle, onViewDetails }) => {
                 onRoleChange={onRoleChange}
               />
             </td>
-            <td className="px-6 py-4 whitespace-nowrap">
+            {/* <td className="px-6 py-4 whitespace-nowrap">
               <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                 user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
               }`}>
@@ -62,7 +62,7 @@ const UserList = ({ users, onRoleChange, onStatusToggle, onViewDetails }) => {
                   Details
                 </Button>
               </div>
-            </td>
+            </td> */}
           </tr>
         ))}
       </tbody>

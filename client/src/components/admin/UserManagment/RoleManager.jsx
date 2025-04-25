@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 const RoleManager = ({ currentRole, userId, onRoleChange }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [selectedRole, setSelectedRole] = useState(currentRole);

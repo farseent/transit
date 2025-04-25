@@ -5,8 +5,9 @@ import { AuthProvider } from './context/AuthContext';
 import { SearchProvider } from './context/SearchContext';
 import { AdminProvider } from './context/AdminContext';
 import Layout from './components/layout/Layout';
+import AdminLayout from './components/layout/AdminLayout';
 
-// Pages 
+// Public Pages 
 import HomePage from './pages/HomePage';
 import BusListPage from './pages/BusListPage';
 import BusDetailPage from './pages/BusDetailPage';
@@ -15,12 +16,17 @@ import RegisterPage from './pages/RegisterPage';
 import NotFoundPage from './pages/NotFoundPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 
-// Protected Route Component
-import UserProtectedRoute from './components/protected/UserProtectedRoute';
-import OwnerProtectedRoute from './components/protected/OwnerProtectedRoute';
+
+// Route Configs
 import UserRoutes from './routes/UserRoutes';
 import OwnerRoutes from './routes/OwnerRoutes';
+import AdminRoutes from './routes/AdminRoutes';
+
+// Protected Route Component
 import PublicRoute from './components/protected/PublicRoute';
+import UserProtectedRoute from './components/protected/UserProtectedRoute';
+import OwnerProtectedRoute from './components/protected/OwnerProtectedRoute';
+import AdminProtectedRoute from './components/protected/AdminProtectedRoute';
 
 //Adminpages
 
@@ -31,6 +37,7 @@ function App() {
         <SearchProvider>
           <AdminProvider>
           <Layout>
+            
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
@@ -50,6 +57,13 @@ function App() {
               {/* OWNER ROUTES */}
               <Route element={<OwnerProtectedRoute />}>
                 {OwnerRoutes.map(({ path, element }, idx) => (
+                  <Route key={idx} path={path} element={element} />
+                ))}
+              </Route>
+
+              {/* admin ROUTES */}
+              <Route element={<AdminProtectedRoute />}>
+                {AdminRoutes.map(({ path, element }, idx) => (
                   <Route key={idx} path={path} element={element} />
                 ))}
               </Route>

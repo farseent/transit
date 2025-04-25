@@ -1,6 +1,8 @@
 const User = require('../models/User');
 const Bus = require('../models/Bus');
 const Route = require('../models/Route');
+const Review = require('../models/Review');
+const Complaint = require('../models/Complaint');
 const ActivityLog = require('../models/ActivityLog');
 
 // User Management
@@ -171,19 +173,17 @@ exports.createRoute = async (req, res) => {
 
 // System Statistics
 exports.getSystemStats = async (req, res) => {
-  try {
+  try {  
     const [users, buses, routes, reviews] = await Promise.all([
       User.countDocuments(),
       Bus.countDocuments(),
       Route.countDocuments(),
       Review.countDocuments()
     ]);
-
     const recentActivity = await ActivityLog.find()
       .sort({ timestamp: -1 })
       .limit(5)
       .populate('adminId', 'name email');
-
     res.json({
       stats: {
         users,
@@ -192,11 +192,12 @@ exports.getSystemStats = async (req, res) => {
         buses,
         routes,
         reviews,
-        activeBuses: await Bus.countDocuments({ status: 'active' })
+        activeBuses: await Bus.countDocuments({ isAvailable: 'true' })
       },
       recentActivity
     });
   } catch (err) {
+    console.error('Error in getSystemStats:', err);
     res.status(500).json({ message: err.message });
   }
 };
@@ -250,7 +251,11 @@ exports.getOwners = async (req, res) => {
 // Get all buses
 exports.getBuses = async (req, res) => {
   try {
+    console.log('control reached admincontroller');
+    
     const buses = await Bus.find().populate('owner', 'name');
+    // console.log('response sending from admin controller',buses);
+    
     res.json(buses);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -275,6 +280,8 @@ exports.getRecentComplaints = async (req, res) => {
       .limit(5)
       .populate('bus', 'name')
       .populate('user', 'name');
+    console.log('recent complaints in admin controller:',complaints);
+      
     res.json(complaints);
   } catch (err) {
     res.status(500).json({ message: err.message });

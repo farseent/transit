@@ -10,8 +10,8 @@ const ComplaintOverview = () => {
   const fetchComplaints = async () => {
     try {
       setLoading(true);
-      const data = await adminApi.getRecentComplaints();
-      setComplaints(data);
+      const response = await adminApi.getRecentComplaints();
+      setComplaints(response.data);
     } catch (err) {
       setError(err.message);
     } finally {
