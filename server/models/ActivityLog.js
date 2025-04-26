@@ -12,7 +12,7 @@ const activityLogSchema = new mongoose.Schema({
   },
   entityType: {
     type: String,
-    enum: ['user', 'bus', 'route', 'system']
+    enum: ['user', 'bus', 'route','stop', 'system']
   },
   entityId: {
     type: mongoose.Schema.Types.ObjectId

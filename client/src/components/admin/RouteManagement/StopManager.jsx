@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Input, Table, Alert, Modal } from '../common';
-import { getStops, createStop, deleteStop } from '../../../api/adminApi';
+import Alert from '../../common/Alert';
+import Button from '../../common/Button';
+import Input from '../../common/Input';
+import Table from '../../common/Table';
+import Modal from '../../common/Modal';
+import adminApi from '../../../api/adminApi';
 
 const StopManager = () => {
   const [stops, setStops] = useState([]);
@@ -23,7 +27,7 @@ const StopManager = () => {
   const fetchStops = async () => {
     try {
       setLoading(true);
-      const response = await getStops();
+      const response = await adminApi.getStops();
       setStops(response.data);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to fetch stops');
@@ -52,7 +56,7 @@ const StopManager = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createStop(newStop);
+      await adminApi.createStop(newStop);
       setShowModal(false);
       fetchStops();
       setNewStop({
@@ -71,7 +75,7 @@ const StopManager = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this stop?')) {
       try {
-        await deleteStop(id);
+        await adminApi.deleteStop(id);
         fetchStops();
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to delete stop');
@@ -122,10 +126,10 @@ const StopManager = () => {
           </Table.Body>
         </Table>
       </div>
-
       <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
-        <Modal.Header>Add New Stop</Modal.Header>
-        <Modal.Body>
+        <div className="p-4">
+          <h2 className="text-lg font-semibold mb-4">Add New Stop</h2>
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="Stop Name"
@@ -164,15 +168,19 @@ const StopManager = () => {
                 />
               </div>
             </div>
+
+            <div className="flex justify-end space-x-2 mt-4">
+              <Button variant="secondary" onClick={() => setShowModal(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                Save Stop
+              </Button>
+            </div>
           </form>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit}>Save Stop</Button>
-        </Modal.Footer>
+        </div>
       </Modal>
+
     </div>
   );
 };

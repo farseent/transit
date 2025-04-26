@@ -24,10 +24,10 @@ const StopSchema = new mongoose.Schema({
       index: '2dsphere'
     }
   },
-  routes: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Route'
-  }],
+  // routes: [{
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: 'Route'
+  // }],
   createdAt: {
     type: Date,
     default: Date.now

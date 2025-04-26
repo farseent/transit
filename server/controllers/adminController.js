@@ -289,6 +289,8 @@ exports.getRoutes = async (req, res) => {
 exports.createRoute = async (req, res) => {
   try {
     const route = new Route(req.body);
+    console.log('Request recieved in create route controller:',route);
+    
     await route.save();
 
     // Log activity

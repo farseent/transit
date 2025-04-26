@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import Alert from '../../components/common/Alert';
-import Button from '../../components/common/Button';
-import Select from '../../components/common/Select';
-import Input from '../../components/common/Input';
+import Alert from '../../common/Alert';
+import Button from '../../common/Button';
+import Input from '../../common/Input';
+import Select from '../../common/Select';
 import adminApi from '../../../api/adminApi';
 
 const RouteForm = ({ isEdit, initialData = {}, onSubmit, onCancel }) => {
+  initialData = initialData || {};
+  
   const [formData, setFormData] = useState({
     name: initialData.name || '',
     stops: initialData.stops || [],
@@ -22,7 +24,9 @@ const RouteForm = ({ isEdit, initialData = {}, onSubmit, onCancel }) => {
       try {
         setLoading(true);
         const response = await adminApi.getStops();
-        setStops(response.data);
+        console.log('stops fetched from route form =', response);
+        
+        setStops(response.data); // This seems fine as it correctly sets stops
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to fetch stops');
       } finally {
@@ -136,14 +140,11 @@ const RouteForm = ({ isEdit, initialData = {}, onSubmit, onCancel }) => {
               value={stopId}
               onChange={(e) => handleStopChange(index, e.target.value)}
               required
-            >
-              <option value="">Select a stop</option>
-              {stops.map(stop => (
-                <option key={stop._id} value={stop._id}>
-                  {stop.name} ({stop.code})
-                </option>
-              ))}
-            </Select>
+              options={stops.map(stop => ({
+                value: stop._id, // The unique identifier of the stop
+                label: `${stop.name} (${stop.code})` // What will be shown in the dropdown
+              }))}
+            />
             
             {index > 0 && (
               <>

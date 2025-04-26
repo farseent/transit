@@ -1,8 +1,9 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Table, Button } from '../common';
+// import { Link } from 'react-router-dom';
+import Button from '../../common/Button';
+import Table from '../../common/Table';
 
-const RouteList = ({ routes, onDelete }) => {
+const RouteList = ({ routes, onDelete, onEdit  }) => {
   return (
     <Table>
       <Table.Head>
@@ -18,14 +19,21 @@ const RouteList = ({ routes, onDelete }) => {
         {routes.map((route) => (
           <Table.Row key={route._id}>
             <Table.Cell>{route.name}</Table.Cell>
-            <Table.Cell>{route.stops.length}</Table.Cell>
+            <Table.Cell>{route.stops?.length ?? 0}</Table.Cell>
             <Table.Cell>{route.fareRate}</Table.Cell>
             <Table.Cell>{new Date(route.createdAt).toLocaleDateString()}</Table.Cell>
             <Table.Cell>
               <div className="flex space-x-2">
-                <Link to={`/admin/routes/edit/${route._id}`}>
+                {/* <Link to={`/admin/routes/edit/${route._id}`}>
                   <Button size="sm" variant="outline">Edit</Button>
-                </Link>
+                </Link> */}
+                <Button 
+                  size="sm" 
+                    variant="outline"
+                    onClick={() => onEdit(route)}
+                  >
+                    Edit
+                </Button>
                 <Button 
                   size="sm" 
                   variant="danger"
