@@ -24,11 +24,6 @@ const StopSchema = new mongoose.Schema({
       index: '2dsphere'
     }
   },
-
-  // address: {
-  //   type: String,
-  //   required: [true, 'Please add an address']
-  // },
   routes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Route'

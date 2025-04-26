@@ -1,43 +1,85 @@
-import { useState } from 'react';
-import Input from '../../common/Input';
+import React, { useState, useEffect } from 'react';
+import Alert from '../../components/common/Alert';
+import Button from '../../components/common/Button';
+import Select from '../../components/common/Select';
+import Input from '../../components/common/Input';
+import adminApi from '../../../api/adminApi';
 
-const RouteForm = ({ onSubmit, onCancel }) => {
+const RouteForm = ({ isEdit, initialData = {}, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
-    name: '',
-    startPoint: '',
-    endPoint: '',
-    stops: [],
-    baseFare: 0
+    name: initialData.name || '',
+    stops: initialData.stops || [],
+    distances: initialData.distances || [],
+    times: initialData.times || [],
+    fareRate: initialData.fareRate || 0
   });
+  const [stops, setStops] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const [newStop, setNewStop] = useState('');
+  useEffect(() => {
+    const fetchStops = async () => {
+      try {
+        setLoading(true);
+        const response = await adminApi.getStops();
+        setStops(response.data);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to fetch stops');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchStops();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddStop = () => {
-    if (newStop.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        stops: [...prev.stops, { name: newStop.trim(), fareFromStart: 0 }]
-      }));
-      setNewStop('');
-    }
+  const handleStopChange = (index, value) => {
+    const updatedStops = [...formData.stops];
+    updatedStops[index] = value;
+    setFormData(prev => ({ ...prev, stops: updatedStops }));
   };
 
-  const handleRemoveStop = (index) => {
+  const handleDistanceChange = (index, value) => {
+    const updatedDistances = [...formData.distances];
+    updatedDistances[index] = Number(value);
+    setFormData(prev => ({ ...prev, distances: updatedDistances }));
+  };
+
+  const handleTimeChange = (index, value) => {
+    const updatedTimes = [...formData.times];
+    updatedTimes[index] = Number(value);
+    setFormData(prev => ({ ...prev, times: updatedTimes }));
+  };
+
+  const addStop = () => {
     setFormData(prev => ({
       ...prev,
-      stops: prev.stops.filter((_, i) => i !== index)
+      stops: [...prev.stops, stops[0]?._id || ''],
+      distances: [...prev.distances, 0],
+      times: [...prev.times, 0]
     }));
   };
 
-  const handleStopFareChange = (index, value) => {
+  const removeStop = (index) => {
     const updatedStops = [...formData.stops];
-    updatedStops[index].fareFromStart = Number(value);
-    setFormData(prev => ({ ...prev, stops: updatedStops }));
+    const updatedDistances = [...formData.distances];
+    const updatedTimes = [...formData.times];
+    
+    updatedStops.splice(index, 1);
+    updatedDistances.splice(index, 1);
+    updatedTimes.splice(index, 1);
+    
+    setFormData(prev => ({
+      ...prev,
+      stops: updatedStops,
+      distances: updatedDistances,
+      times: updatedTimes
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -45,9 +87,11 @@ const RouteForm = ({ onSubmit, onCancel }) => {
     onSubmit(formData);
   };
 
+  if (loading) return <div>Loading stops data...</div>;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-xl font-semibold">Create New Route</h2>
+      {error && <Alert type="error" message={error} />}
       
       <Input
         label="Route Name"
@@ -58,86 +102,94 @@ const RouteForm = ({ onSubmit, onCancel }) => {
       />
       
       <Input
-        label="Start Point"
-        name="startPoint"
-        value={formData.startPoint}
-        onChange={handleChange}
-        required
-      />
-      
-      <Input
-        label="End Point"
-        name="endPoint"
-        value={formData.endPoint}
-        onChange={handleChange}
-        required
-      />
-      
-      <Input
-        label="Base Fare"
-        name="baseFare"
+        label="Fare Rate (per km)"
+        name="fareRate"
         type="number"
-        value={formData.baseFare}
+        step="0.01"
+        min="0"
+        value={formData.fareRate}
         onChange={handleChange}
         required
       />
       
-      <div>
-        <label className="block text-sm font-medium mb-2">Route Stops</label>
-        <div className="flex space-x-2 mb-2">
-          <input
-            type="text"
-            value={newStop}
-            onChange={(e) => setNewStop(e.target.value)}
-            placeholder="Add a stop"
-            className="flex-1 p-2 border rounded"
-          />
-          <button
-            type="button"
-            onClick={handleAddStop}
-            className="px-3 bg-blue-500 text-white rounded"
-          >
-            Add
-          </button>
-        </div>
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">Route Stops</h3>
         
-        <div className="space-y-2 max-h-40 overflow-y-auto">
-          {formData.stops.map((stop, index) => (
-            <div key={index} className="flex items-center space-x-2 p-2 border rounded">
-              <span className="flex-1">{stop.name}</span>
-              <input
-                type="number"
-                value={stop.fareFromStart}
-                onChange={(e) => handleStopFareChange(index, e.target.value)}
-                placeholder="Fare from start"
-                className="w-24 p-1 border rounded"
-              />
-              <button
-                type="button"
-                onClick={() => handleRemoveStop(index)}
-                className="px-2 text-red-500"
-              >
-                Remove
-              </button>
+        {formData.stops.map((stopId, index) => (
+          <div key={index} className="border p-4 rounded-lg space-y-2">
+            <div className="flex justify-between items-center">
+              <h4 className="font-medium">Stop #{index + 1}</h4>
+              {index > 0 && (
+                <Button 
+                  type="button" 
+                  size="sm" 
+                  variant="danger"
+                  onClick={() => removeStop(index)}
+                >
+                  Remove
+                </Button>
+              )}
             </div>
-          ))}
-        </div>
+            
+            <Select
+              label="Select Stop"
+              value={stopId}
+              onChange={(e) => handleStopChange(index, e.target.value)}
+              required
+            >
+              <option value="">Select a stop</option>
+              {stops.map(stop => (
+                <option key={stop._id} value={stop._id}>
+                  {stop.name} ({stop.code})
+                </option>
+              ))}
+            </Select>
+            
+            {index > 0 && (
+              <>
+                <Input
+                  label={`Distance from previous stop (km)`}
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  value={formData.distances[index] || 0}
+                  onChange={(e) => handleDistanceChange(index, e.target.value)}
+                  required
+                />
+                
+                <Input
+                  label={`Time from previous stop (minutes)`}
+                  type="number"
+                  min="0"
+                  value={formData.times[index] || 0}
+                  onChange={(e) => handleTimeChange(index, e.target.value)}
+                  required
+                />
+              </>
+            )}
+          </div>
+        ))}
+        
+        <Button 
+          type="button" 
+          variant="outline"
+          onClick={addStop}
+        >
+          Add Stop
+        </Button>
       </div>
       
-      <div className="flex justify-end space-x-3 pt-4">
-        <button
-          type="button"
+      <div className="flex justify-end space-x-2">
+        <Button 
+          type="button" 
+          variant="secondary"
           onClick={onCancel}
-          className="px-4 py-2 border rounded hover:bg-gray-100"
         >
           Cancel
-        </button>
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Create Route
-        </button>
+        </Button>
+        <Button type="submit">
+          {isEdit ? 'Update Route' : 'Create Route'}
+        </Button>
       </div>
     </form>
   );

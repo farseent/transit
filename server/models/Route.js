@@ -11,17 +11,23 @@ const RouteSchema = new mongoose.Schema({
   },
   stops: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Stop'
+    ref: 'Stop',
+    required: true
   }],
   // Distance between stops in kilometers
-  distances: [Number],
+  distances: [{ 
+    type :Number,
+    required: true 
+  }],
   // Estimated time between stops in minutes
-  times: [Number],
+  times: [{ 
+    type:Number,
+    required:true 
+  }],
   // Fare multiplier per kilometer
   fareRate: {
     type: Number,
-    required: true,
-    default: 1.5
+    required: true
   },
   createdAt: {
     type: Date,
