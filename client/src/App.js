@@ -1,6 +1,6 @@
 // src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { SearchProvider } from './context/SearchContext';
 import { AdminProvider } from './context/AdminContext';
@@ -28,54 +28,60 @@ import UserProtectedRoute from './components/protected/UserProtectedRoute';
 import OwnerProtectedRoute from './components/protected/OwnerProtectedRoute';
 import AdminProtectedRoute from './components/protected/AdminProtectedRoute';
 
-//Adminpages
 
 function App() {
+
+  const location = useLocation();
+  const isAdmin = AdminRoutes.some(route=>location.pathname.startsWith(route.path))
+
   return (
-    <Router>
       <AuthProvider>
         <SearchProvider>
           <AdminProvider>
-          <Layout>
-            
             <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/unauthorized" element={<UnauthorizedPage />} />
+              {/* Public/User/Owner Layout */}
+              <Route element={<Layout />}>
+                {/* Public Routes */}
+                <Route path="/" element={<PublicRoute><HomePage /></PublicRoute>} />
+                <Route path="/buses" element={<PublicRoute><BusListPage /></PublicRoute>} />
+                <Route path="/buses/:id" element={<PublicRoute><BusDetailPage /></PublicRoute>} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
-              <Route path="/" element={<PublicRoute><HomePage /></PublicRoute>} />
-              <Route path="/buses" element={<PublicRoute><BusListPage /></PublicRoute>} />
-              <Route path="/buses/:id" element={<PublicRoute><BusDetailPage /></PublicRoute>} />
+                {/* User Routes */}
+                <Route element={<UserProtectedRoute />}>
+                  {UserRoutes.map(({ path, element }, idx) => (
+                    <Route key={idx} path={path} element={element} />
+                  ))}
+                </Route>
 
-              {/* USER ROUTES */}
-              <Route element={<UserProtectedRoute />}>
-                {UserRoutes.map(({ path, element }, idx) => (
-                  <Route key={idx} path={path} element={element} />
-                ))}
+                {/* Owner Routes */}
+                <Route element={<OwnerProtectedRoute />}>
+                  {OwnerRoutes.map(({ path, element }, idx) => (
+                    <Route key={idx} path={path} element={element} />
+                  ))}
+                </Route>
+
+                {/* Catch-All for Not Found */}
+                <Route path="*" element={<NotFoundPage />} />
               </Route>
 
-              {/* OWNER ROUTES */}
-              <Route element={<OwnerProtectedRoute />}>
-                {OwnerRoutes.map(({ path, element }, idx) => (
-                  <Route key={idx} path={path} element={element} />
-                ))}
+              {/* Admin Layout */}
+              <Route element={<AdminLayout />}>
+                <Route element={<AdminProtectedRoute />}>
+                  {AdminRoutes.map(({ path, element }, idx) => (
+                    <Route key={idx} path={path} element={element} />
+                  ))}
+                </Route>
               </Route>
 
-              {/* admin ROUTES */}
-              <Route element={<AdminProtectedRoute />}>
-                {AdminRoutes.map(({ path, element }, idx) => (
-                  <Route key={idx} path={path} element={element} />
-                ))}
-              </Route>
-
-
-              <Route path="*" element={<NotFoundPage />} />
             </Routes>
-          </Layout>
+
+          {/* </Layout> */}
           </AdminProvider>
         </SearchProvider>
       </AuthProvider>
-    </Router>
   );
 }
 

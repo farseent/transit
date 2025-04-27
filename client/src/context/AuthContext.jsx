@@ -1,6 +1,6 @@
 //AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { login as apiLogin, register as apiRegister, logout as apiLogout, getProfile } from '../api/userApi';
+import { login as apiLogin, register as apiRegister, getProfile } from '../api/userApi';
 import { saveToken, getToken, removeToken } from '../utils/localStorage';
 
 const AuthContext = createContext(null);
@@ -116,6 +116,7 @@ export const AuthProvider = ({ children }) => {
   
   const value = {
     user,
+    role: user?.role,
     loading,
     error,
     login,
