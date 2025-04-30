@@ -1,46 +1,63 @@
-import BusOwnerAssign from "./BusOwnerAssign";
-import BusRouteAssign from "./BusRouteAssign";
+import Button from "../../common/Button";
 
-const BusList = ({ buses, owners, routes, onAssignOwner, onAssignRoute }) => {
-    return (
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white">
-          <thead>
-            <tr>
-              <th className="py-2 px-4 border-b">Name</th>
-              <th className="py-2 px-4 border-b">Reg. Number</th>
-              <th className="py-2 px-4 border-b">Route</th>
-              <th className="py-2 px-4 border-b">Owner</th>
-            </tr>
-          </thead>
-          <tbody>
-            {buses.map(bus => (
-              <tr key={bus._id}>
-                <td className="py-2 px-4 border-b">{bus.name}</td>
-                <td className="py-2 px-4 border-b">{bus.regNumber}</td>
-                {/* <td className="py-2 px-4 border-b">{bus.route}</td> */}
-                <td className="py-2 px-4 border-b">
-                  <BusRouteAssign 
-                    busId={bus._id}
-                    currentRoute={bus.route}
-                    routes={routes}
-                    onAssign={onAssignRoute}
-                  />
-              </td>
-                <td className="py-2 px-4 border-b">
-                  <BusOwnerAssign 
-                    busId={bus._id}
-                    currentOwner={bus.owner?._id}
-                    owners={owners}
-                    onAssign={onAssignOwner}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
-  };
+const BusList = ({ buses, onEditBus, onDeleteBus }) => {
+  console.log('bus data recieved in buslist :',buses);
   
-  export default BusList;
+  return (
+    <div className="overflow-x-auto">
+      <table className="min-w-full bg-white">
+        <thead>
+          <tr>
+            <th className="py-2 px-4 border-b">Name</th>
+            <th className="py-2 px-4 border-b">Reg. Number</th>
+            <th className="py-2 px-4 border-b">Route</th>
+            <th className="py-2 px-4 border-b">Owner</th>
+            <th className="py-2 px-4 border-b">Schedules</th>
+            <th className="py-2 px-4 border-b">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {buses.map(bus => (
+            <tr key={bus._id}>
+              <td className="py-2 px-4 border-b">{bus.name}</td>
+              <td className="py-2 px-4 border-b">{bus.regNumber}</td>
+              <td className="py-2 px-4 border-b">
+                {bus.route?.name || 'Unassigned'}
+              </td>
+              <td className="py-2 px-4 border-b">
+                {bus.owner?.name || 'Unassigned'}
+              </td>
+              <td className="py-2 px-4 border-b">
+                {bus.schedules?.length > 0 ? (
+                  <ul className="list-disc pl-4">
+                    {bus.schedules.map((schedule, index) => (
+                      <li key={index}>{schedule.departureTime}</li>
+                    ))}
+                  </ul>
+                ) : 'No schedules'}
+              </td>
+              <td className="py-2 px-4 border-b space-x-2">
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => onEditBus(bus)}
+                >
+                  Edit
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="danger"
+                  onClick={() => onDeleteBus(bus._id)}
+                >
+                  Delete
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+export default BusList;

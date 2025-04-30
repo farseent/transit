@@ -16,6 +16,7 @@ const BusManagementPage = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [currentBus, setCurrentBus] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -26,23 +27,14 @@ const BusManagementPage = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await adminApi.getBuses({
+      const response = await adminApi.getBusesPaginated({
         page: pagination.page,
         limit: pagination.limit
       });
-      // console.log('data received in busManagementpage =', response);
-  
-      const buses = response.data; // <- correct path
-      if (Array.isArray(buses)) {
-        setBuses(buses);
-      } else {
-        setBuses([]);
-      }
-  
-      // totalPages is probably not available in this structure, so default it
+      setBuses(response.data.buses || []);
       setPagination(prev => ({
         ...prev,
-        totalPages: 1 // You can update this if your backend provides it elsewhere
+        totalPages: response.data.totalPages || 1
       }));
     } catch (err) {
       setError(err.response?.data?.message || err.message);
@@ -50,13 +42,11 @@ const BusManagementPage = () => {
       setLoading(false);
     }
   };
-  
 
   const fetchOwners = async () => {
     try {
       const response = await adminApi.getOwners();
-      // console.log('owners response:', response); // Check what's inside
-      setOwners(response.data); // Assuming response.data is the array
+      setOwners(response.data);
     } catch (err) {
       console.error('Failed to fetch owners:', err);
     }
@@ -65,51 +55,86 @@ const BusManagementPage = () => {
   const fetchRoutes = async () => {
     try {
       const response = await adminApi.getRoutes();
-      setRoutes(response.data)
+      setRoutes(response.data);
     } catch (err) {
-      console.log('Failed to fetch routes:',err);
+      console.log('Failed to fetch routes:', err);
     }
-  }
-  
+  };
+
   const handleCreateBus = async (busData) => {
     try {
-      const newBus = await adminApi.createBus(busData);
-      setBuses([newBus, ...buses]);
+      const response = await adminApi.createBus(busData);
+      setBuses([response.data, ...buses]);
       setSuccess('Bus created successfully');
       setTimeout(() => setSuccess(null), 3000);
       setShowForm(false);
+      fetchBuses();
     } catch (err) {
       setError(err.response?.data?.message || err.message);
     }
   };
 
-  const handleAssignOwner = async (busId, ownerId) => {
+  const handleUpdateBus = async (busData) => {
     try {
-      await adminApi.assignBusToOwner(busId, ownerId);
-      fetchBuses();
+      const response = await adminApi.updateBus(currentBus._id, busData);
       setBuses(buses.map(bus => 
-        bus._id === busId ? { ...bus, owner: ownerId } : bus
+        bus._id === currentBus._id ? response.data : bus
       ));
-      setSuccess('Bus owner assigned successfully');
+      setSuccess('Bus updated successfully');
       setTimeout(() => setSuccess(null), 3000);
+      setShowForm(false);
+      setCurrentBus(null);
+      fetchBuses();
     } catch (err) {
       setError(err.response?.data?.message || err.message);
     }
   };
 
-  const handleAssignRoute = async (busId, routeId) => {
-    try {
-      await adminApi.assignBusToRoute(busId, routeId);
-      fetchBuses();
-      const assignedRoute = routes.find(route => route._id === routeId);
-      setBuses(buses.map(bus => 
-        bus._id === busId ? { ...bus, route: assignedRoute } : bus
-      ));
-      setSuccess('Bus route assigned successfully');
-      setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
-      setError(err.response?.data?.message || err.message);
+  const handleDeleteBus = async (busId) => {
+    if (window.confirm('Are you sure you want to delete this bus? This action cannot be undone.')) {
+      try {
+        await adminApi.deleteBus(busId);
+        setBuses(buses.filter(bus => bus._id !== busId));
+        setSuccess('Bus deleted successfully');
+        setTimeout(() => setSuccess(null), 3000);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to delete bus');
+      }
     }
+  };
+
+  // const handleAssignOwner = async (busId, ownerId) => {
+  //   try {
+  //     await adminApi.assignBusToOwner(busId, ownerId);
+  //     setBuses(buses.map(bus => 
+  //       bus._id === busId ? { ...bus, owner: ownerId } : bus
+  //     ));
+  //     setSuccess('Bus owner assigned successfully');
+  //     setTimeout(() => setSuccess(null), 3000);
+  //   } catch (err) {
+  //     setError(err.response?.data?.message || err.message);
+  //   }
+  // };
+
+
+//Assignroute  
+  // const handleAssignRoute = async (busId, routeId) => {
+  //   try {
+  //     await adminApi.assignBusToRoute(busId, routeId);
+  //     const assignedRoute = routes.find(route => route._id === routeId);
+  //     setBuses(buses.map(bus => 
+  //       bus._id === busId ? { ...bus, route: assignedRoute } : bus
+  //     ));
+  //     setSuccess('Bus route assigned successfully');
+  //     setTimeout(() => setSuccess(null), 3000);
+  //   } catch (err) {
+  //     setError(err.response?.data?.message || err.message);
+  //   }
+  // };
+
+  const handleEditBus = (bus) => {
+    setCurrentBus(bus);
+    setShowForm(true);
   };
 
   const handlePageChange = (newPage) => {
@@ -127,7 +152,10 @@ const BusManagementPage = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Bus Management</h1>
         <Button
-          onClick={() => setShowForm(true)}
+          onClick={() => {
+            setCurrentBus(null);
+            setShowForm(true);
+          }}
           variant="primary"
         >
           Add New Bus
@@ -145,18 +173,18 @@ const BusManagementPage = () => {
         <>
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <BusList 
-              buses={buses} 
-              owners={owners}
-              routes={routes}
-              onAssignOwner={handleAssignOwner}
-              onAssignRoute={handleAssignRoute}
+              buses={buses}
+              onEditBus={handleEditBus}
+              onDeleteBus={handleDeleteBus}
             />
           </div>
-          <Pagination
-            currentPage={pagination.page}
-            totalPages={pagination.totalPages}
-            onPageChange={handlePageChange}
-          />
+          {pagination.totalPages > 1 && (
+            <Pagination
+              currentPage={pagination.page}
+              totalPages={pagination.totalPages}
+              onPageChange={handlePageChange}
+            />
+          )}
         </>
       ) : (
         <div className="text-center py-8 text-gray-500">
@@ -166,14 +194,22 @@ const BusManagementPage = () => {
 
       <Modal 
         isOpen={showForm} 
-        onClose={() => setShowForm(false)}
-        title="Add New Bus"
+        onClose={() => {
+          setShowForm(false);
+          setCurrentBus(null);
+        }}
+        title={currentBus ? 'Edit Bus' : 'Add New Bus'}
+        size="lg"
       >
         <BusForm 
-          onSubmit={handleCreateBus} 
-          onCancel={() => setShowForm(false)}
-          owners={owners}  // Pass owners as a prop
-          routes={routes}  // Pass routes as a prop
+          initialData={currentBus}
+          onSubmit={currentBus ? handleUpdateBus : handleCreateBus}
+          onCancel={() => {
+            setShowForm(false);
+            setCurrentBus(null);
+          }}
+          owners={owners}
+          routes={routes}
         />
       </Modal>
     </div>

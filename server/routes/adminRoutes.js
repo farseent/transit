@@ -35,6 +35,7 @@ router.delete('/routes/:routeId', adminController.deleteRoute); // NEW
 // ========== STOP MANAGEMENT ==========
 router.get('/stops', adminController.getStops); // NEW
 router.post('/stops', adminController.createStop); // NEW
+router.put('/stops/:stopId', adminController.updateStop); // NEW
 router.delete('/stops/:stopId', adminController.deleteStop); // NEW
 
 // ========== COMPLAINT MANAGEMENT ==========

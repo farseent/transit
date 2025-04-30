@@ -25,6 +25,7 @@ export default {
 
   // ===== STOP MANAGEMENT =====
   createStop: (stopData) => axios.post('/admin/stops', stopData),
+  updateStop:(id, stopData) => axios.put(`/admin/stops/${id}`, stopData),
   getStops: () => axios.get('/admin/stops'),
   deleteStop: (id) => axios.delete(`/admin/stops/${id}`),
 

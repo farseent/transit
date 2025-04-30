@@ -228,7 +228,9 @@ exports.getBusesPaginated = async (req, res) => {
     const buses = await Bus.find(query)
       .limit(limit * 1)
       .skip((page - 1) * limit)
-      .populate('owner', 'name');
+      .populate('owner', 'name')
+      .populate('route','name');
+      
 
     const count = await Bus.countDocuments(query);
 
@@ -451,7 +453,36 @@ exports.getStops = async (req, res) => {
 
 exports.createStop = async (req, res) => {
   try {
-    const stop = new Stop(req.body);
+    const { name, code, location } = req.body;
+
+    // Validate required fields
+    if (!name || !code || !location || !location.coordinates) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Name, code, and location with coordinates are required'
+      });
+    }
+
+    // Validate coordinates format
+    if (!Array.isArray(location.coordinates) || location.coordinates.length !== 2) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Location must contain coordinates array with [longitude, latitude]'
+      });
+    }
+
+    const stop = new Stop({
+      name,
+      code,
+      location: {
+        type: 'Point',
+        coordinates: [
+          Number(location.coordinates[0]),
+          Number(location.coordinates[1])
+        ]
+      }
+    });
+
     await stop.save();
 
     await ActivityLog.create({
@@ -462,11 +493,85 @@ exports.createStop = async (req, res) => {
       changes: req.body
     });
 
-    res.status(201).json(stop);
+    res.status(201).json({
+      status: 'success',
+      data: {
+        stop
+      }
+    });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    // Handle duplicate key error (unique code)
+    if (err.code === 11000) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Stop code must be unique'
+      });
+    }
+    
+    res.status(400).json({
+      status: 'error',
+      message: err.message
+    });
   }
 };
+
+exports.updateStop = async (req, res) =>{
+  try {
+    const { stopId } = req.params;
+    const { name, code, location } = req.body;
+
+    // Validate required fields
+    if (!name || !code || !location || !location.coordinates) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Name, code, and location with coordinates are required'
+      });
+    }
+
+    // Validate coordinates format
+    if (!Array.isArray(location.coordinates) || location.coordinates.length !== 2) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Location must contain coordinates array with [longitude, latitude]'
+      });
+    }
+
+    const updatedStop = await Stop.findByIdAndUpdate(
+      stopId,
+      {
+        name,
+        code,
+        location: {
+          type: 'Point',
+          coordinates: [
+            Number(location.coordinates[0]),
+            Number(location.coordinates[1])
+          ]
+        }
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedStop) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Stop not found'
+      });
+    }
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        stop: updatedStop
+      }
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'error',
+      message: err.message
+    });
+  }
+}
 
 exports.deleteStop = async (req, res) => {
   try {

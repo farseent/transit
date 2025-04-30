@@ -12,7 +12,8 @@ const StopManager = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [newStop, setNewStop] = useState({
+  const [currentStop, setCurrentStop] = useState(null);
+  const [stopForm, setStopForm] = useState({
     name: '',
     code: '',
     location: {
@@ -39,13 +40,13 @@ const StopManager = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setNewStop(prev => ({ ...prev, [name]: value }));
+    setStopForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleCoordinateChange = (index, value) => {
-    const updatedCoordinates = [...newStop.location.coordinates];
+    const updatedCoordinates = [...stopForm.location.coordinates];
     updatedCoordinates[index] = Number(value);
-    setNewStop(prev => ({
+    setStopForm(prev => ({
       ...prev,
       location: {
         ...prev.location,
@@ -57,21 +58,35 @@ const StopManager = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await adminApi.createStop(newStop);
+      if (currentStop) {
+        // Update existing stop
+        await adminApi.updateStop(currentStop._id, stopForm);
+        setSuccess('Stop updated successfully');
+      } else {
+        // Create new stop
+        await adminApi.createStop(stopForm);
+        setSuccess('Stop created successfully');
+      }
       setShowModal(false);
-      setSuccess('Stop created successfully');
       fetchStops();
-      setNewStop({
-        name: '',
-        code: '',
-        location: {
-          type: 'Point',
-          coordinates: [0, 0]
-        }
-      });
+      resetForm();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create stop');
+      setError(err.response?.data?.message || 
+        (currentStop ? 'Failed to update stop' : 'Failed to create stop'));
     }
+  };
+
+  const handleEdit = (stop) => {
+    setCurrentStop(stop);
+    setStopForm({
+      name: stop.name,
+      code: stop.code,
+      location: {
+        type: stop.location.type,
+        coordinates: [...stop.location.coordinates]
+      }
+    });
+    setShowModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -86,6 +101,23 @@ const StopManager = () => {
     }
   };
 
+  const resetForm = () => {
+    setCurrentStop(null);
+    setStopForm({
+      name: '',
+      code: '',
+      location: {
+        type: 'Point',
+        coordinates: [0, 0]
+      }
+    });
+  };
+
+  const handleModalClose = () => {
+    setShowModal(false);
+    resetForm();
+  };
+
   if (loading) return <div>Loading stops...</div>;
 
   return (
@@ -95,7 +127,12 @@ const StopManager = () => {
       
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Bus Stops</h2>
-        <Button onClick={() => setShowModal(true)}>Add New Stop</Button>
+        <Button onClick={() => {
+          resetForm();
+          setShowModal(true);
+        }}>
+          Add New Stop
+        </Button>
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -117,28 +154,40 @@ const StopManager = () => {
                   {stop.location.coordinates.join(', ')}
                 </Table.Cell>
                 <Table.Cell>
-                  <Button 
-                    size="sm" 
-                    variant="danger"
-                    onClick={() => handleDelete(stop._id)}
-                  >
-                    Delete
-                  </Button>
+                  <div className="flex space-x-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleEdit(stop)}
+                    >
+                      Edit
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="danger"
+                      onClick={() => handleDelete(stop._id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 </Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>
         </Table>
       </div>
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
-        <div className="p-4">
-          <h2 className="text-lg font-semibold mb-4">Add New Stop</h2>
 
+      <Modal 
+        isOpen={showModal} 
+        onClose={handleModalClose}
+        title={currentStop ? 'Edit Stop' : 'Add New Stop'}
+      >
+        <div className="p-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="Stop Name"
               name="name"
-              value={newStop.name}
+              value={stopForm.name}
               onChange={handleChange}
               required
             />
@@ -146,7 +195,7 @@ const StopManager = () => {
             <Input
               label="Stop Code"
               name="code"
-              value={newStop.code}
+              value={stopForm.code}
               onChange={handleChange}
               required
             />
@@ -158,7 +207,7 @@ const StopManager = () => {
                   placeholder="Longitude"
                   type="number"
                   step="any"
-                  value={newStop.location.coordinates[0]}
+                  value={stopForm.location.coordinates[0]}
                   onChange={(e) => handleCoordinateChange(0, e.target.value)}
                   required
                 />
@@ -166,7 +215,7 @@ const StopManager = () => {
                   placeholder="Latitude"
                   type="number"
                   step="any"
-                  value={newStop.location.coordinates[1]}
+                  value={stopForm.location.coordinates[1]}
                   onChange={(e) => handleCoordinateChange(1, e.target.value)}
                   required
                 />
@@ -174,17 +223,20 @@ const StopManager = () => {
             </div>
 
             <div className="flex justify-end space-x-2 mt-4">
-              <Button variant="secondary" onClick={() => setShowModal(false)}>
+              <Button 
+                type="button"
+                variant="secondary" 
+                onClick={handleModalClose}
+              >
                 Cancel
               </Button>
               <Button type="submit">
-                Save Stop
+                {currentStop ? 'Update Stop' : 'Save Stop'}
               </Button>
             </div>
           </form>
         </div>
       </Modal>
-
     </div>
   );
 };

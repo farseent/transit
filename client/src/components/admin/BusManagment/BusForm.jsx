@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import Input from '../../common/Input';
 import Select from '../../common/Select';
+import Button from '../../common/Button';
 
-const BusForm = ({ onSubmit, onCancel, owners = [], routes = [] }) => {
+const BusForm = ({ initialData, onSubmit, onCancel, owners = [], routes = [] }) => {
   const [formData, setFormData] = useState({
     name: '',
     regNumber: '',
@@ -13,14 +14,25 @@ const BusForm = ({ onSubmit, onCancel, owners = [], routes = [] }) => {
   });
 
   useEffect(() => {
-    // Ensure that owners and routes are available before updating the form
-    if (owners.length > 0) {
-      setFormData(prev => ({ ...prev, owner: owners[0]._id }));
+    if (initialData) {
+      setFormData({
+        name: initialData.name || '',
+        regNumber: initialData.regNumber || '',
+        owner: initialData.owner?._id || (owners.length > 0 ? owners[0]._id : ''),
+        route: initialData.route?._id || (routes.length > 0 ? routes[0]._id : ''),
+        schedules: initialData.schedules?.length > 0 
+          ? initialData.schedules 
+          : [{ departureTime: '' }],
+        isAvailable: initialData.isAvailable !== false
+      });
+    } else if (owners.length > 0 || routes.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        owner: owners.length > 0 ? owners[0]._id : '',
+        route: routes.length > 0 ? routes[0]._id : ''
+      }));
     }
-    if (routes.length > 0) {
-      setFormData(prev => ({ ...prev, route: routes[0]._id }));
-    }
-  }, [owners, routes]);
+  }, [initialData, owners, routes]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,12 +42,15 @@ const BusForm = ({ onSubmit, onCancel, owners = [], routes = [] }) => {
   const handleScheduleChange = (index, e) => {
     const { name, value } = e.target;
     const newSchedules = [...formData.schedules];
-    newSchedules[index][name] = value;
+    newSchedules[index] = { ...newSchedules[index], [name]: value };
     setFormData(prev => ({ ...prev, schedules: newSchedules }));
   };
 
   const handleAddSchedule = () => {
-    setFormData(prev => ({ ...prev, schedules: [...prev.schedules, { departureTime: '' }] }));
+    setFormData(prev => ({ 
+      ...prev, 
+      schedules: [...prev.schedules, { departureTime: '' }] 
+    }));
   };
 
   const handleRemoveSchedule = (index) => {
@@ -45,13 +60,20 @@ const BusForm = ({ onSubmit, onCancel, owners = [], routes = [] }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    // Filter out empty schedules
+    const filteredSchedules = formData.schedules.filter(
+      s => s.departureTime && s.departureTime.trim() !== ''
+    );
+    
+    onSubmit({
+      ...formData,
+      schedules: filteredSchedules.length > 0 ? filteredSchedules : []
+    });
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-xl font-semibold">Add New Bus</h2>
-
       <Input
         label="Bus Name"
         name="name"
@@ -68,7 +90,6 @@ const BusForm = ({ onSubmit, onCancel, owners = [], routes = [] }) => {
         required
       />
 
-      {/* Select for Owner */}
       <Select
         label="Owner"
         name="owner"
@@ -78,7 +99,6 @@ const BusForm = ({ onSubmit, onCancel, owners = [], routes = [] }) => {
         required
       />
 
-      {/* Select for Route */}
       <Select
         label="Route"
         name="route"
@@ -88,38 +108,38 @@ const BusForm = ({ onSubmit, onCancel, owners = [], routes = [] }) => {
         required
       />
 
-      {/* Schedules */}
-      <div>
-        <label className="block text-sm font-medium mb-2">Schedules</label>
+      <div className="space-y-2">
+        <label className="block text-sm font-medium">Schedules</label>
         {formData.schedules.map((schedule, index) => (
           <div key={index} className="flex items-center space-x-2">
             <Input
-              label="Departure Time"
+              type="time"
               name="departureTime"
               value={schedule.departureTime}
               onChange={(e) => handleScheduleChange(index, e)}
-              placeholder="HH:MM"
-              required
+              required={index === 0}
             />
-            <button
-              type="button"
-              onClick={() => handleRemoveSchedule(index)}
-              className="text-red-500"
-            >
-              Remove
-            </button>
+            {formData.schedules.length > 1 && (
+              <Button
+                type="button"
+                size="sm"
+                variant="danger"
+                onClick={() => handleRemoveSchedule(index)}
+              >
+                Remove
+              </Button>
+            )}
           </div>
         ))}
-        <button
+        <Button
           type="button"
+          variant="outline"
           onClick={handleAddSchedule}
-          className="text-blue-500"
         >
           Add Schedule
-        </button>
+        </Button>
       </div>
 
-      {/* Availability */}
       <div className="flex items-center space-x-2">
         <label className="text-sm font-medium">Is Available</label>
         <input
@@ -131,19 +151,16 @@ const BusForm = ({ onSubmit, onCancel, owners = [], routes = [] }) => {
       </div>
 
       <div className="flex justify-end space-x-3 pt-4">
-        <button
+        <Button
           type="button"
+          variant="secondary"
           onClick={onCancel}
-          className="px-4 py-2 border rounded hover:bg-gray-100"
         >
           Cancel
-        </button>
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Save Bus
-        </button>
+        </Button>
+        <Button type="submit">
+          {initialData ? 'Update Bus' : 'Create Bus'}
+        </Button>
       </div>
     </form>
   );
