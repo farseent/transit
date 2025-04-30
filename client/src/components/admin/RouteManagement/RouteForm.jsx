@@ -3,43 +3,51 @@ import Alert from '../../common/Alert';
 import Button from '../../common/Button';
 import Input from '../../common/Input';
 import Select from '../../common/Select';
-import adminApi from '../../../api/adminApi';
 
-const RouteForm = ({ isEdit, initialData = {}, onSubmit, onCancel }) => {
-  initialData = initialData || {};
-  
+const RouteForm = ({ isEdit, initialData = {}, onSubmit, onCancel, stops }) => {
+  // Initialize form data with proper default values
   const [formData, setFormData] = useState({
-    name: initialData.name || '',
-    stops: initialData.stops || [],
-    distances: initialData.distances || [],
-    times: initialData.times || [],
-    fareRate: initialData.fareRate || 0
+    name: '',
+    stops: [],
+    distances: [],
+    times: [],
+    fareRate: 0
   });
-  const [stops, setStops] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Initialize form data when component mounts or initialData changes
   useEffect(() => {
-    const fetchStops = async () => {
-      try {
-        setLoading(true);
-        const response = await adminApi.getStops();
-        console.log('stops fetched from route form =', response);
-        
-        setStops(response.data); // This seems fine as it correctly sets stops
-      } catch (err) {
-        setError(err.response?.data?.message || 'Failed to fetch stops');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchStops();
-  }, []);
+    if (initialData) {
+      const processedStops = initialData.stops?.length > 0 
+        ? initialData.stops.map(stop => 
+            typeof stop === 'string' ? stop : stop.stopId?._id || stop._id || ''
+          )
+        : [];
+
+      const processedDistances = initialData.distances?.length > 0
+        ? initialData.distances
+        : Array(processedStops.length).fill(0);
+
+      const processedTimes = initialData.times?.length > 0
+        ? initialData.times
+        : Array(processedStops.length).fill(0);
+
+      setFormData({
+        name: initialData.name || '',
+        stops: processedStops,
+        distances: processedDistances,
+        times: processedTimes,
+        fareRate: initialData.fareRate || 0
+      });
+    }
+  }, [initialData, isEdit]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    const parsedValue = type === 'number' ? Number(value) : value;
+    setFormData(prev => ({ ...prev, [name]: parsedValue }));
   };
 
   const handleStopChange = (index, value) => {
@@ -61,9 +69,11 @@ const RouteForm = ({ isEdit, initialData = {}, onSubmit, onCancel }) => {
   };
 
   const addStop = () => {
+    if (stops.length === 0) return;
+    
     setFormData(prev => ({
       ...prev,
-      stops: [...prev.stops, stops[0]?._id || ''],
+      stops: [...prev.stops, stops[0]._id],
       distances: [...prev.distances, 0],
       times: [...prev.times, 0]
     }));
@@ -88,6 +98,20 @@ const RouteForm = ({ isEdit, initialData = {}, onSubmit, onCancel }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validate that at least two stops are selected
+    if (formData.stops.length < 2) {
+      setError('At least two stops are required for a route');
+      return;
+    }
+    
+    // Validate that all stops are unique
+    const uniqueStops = new Set(formData.stops);
+    if (uniqueStops.size !== formData.stops.length) {
+      setError('Duplicate stops are not allowed');
+      return;
+    }
+
     onSubmit(formData);
   };
 
@@ -95,7 +119,7 @@ const RouteForm = ({ isEdit, initialData = {}, onSubmit, onCancel }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <Alert type="error" message={error} />}
+      {error && <Alert type="error" message={error} onClose={() => setError(null)} />}
       
       <Input
         label="Route Name"
@@ -120,7 +144,7 @@ const RouteForm = ({ isEdit, initialData = {}, onSubmit, onCancel }) => {
         <h3 className="text-lg font-semibold">Route Stops</h3>
         
         {formData.stops.map((stopId, index) => (
-          <div key={index} className="border p-4 rounded-lg space-y-2">
+          <div key={`stop-${index}`} className="border p-4 rounded-lg space-y-2">
             <div className="flex justify-between items-center">
               <h4 className="font-medium">Stop #{index + 1}</h4>
               {index > 0 && (
@@ -141,8 +165,8 @@ const RouteForm = ({ isEdit, initialData = {}, onSubmit, onCancel }) => {
               onChange={(e) => handleStopChange(index, e.target.value)}
               required
               options={stops.map(stop => ({
-                value: stop._id, // The unique identifier of the stop
-                label: `${stop.name} (${stop.code})` // What will be shown in the dropdown
+                value: stop._id,
+                label: `${stop.name} (${stop.code})`
               }))}
             />
             
@@ -175,6 +199,7 @@ const RouteForm = ({ isEdit, initialData = {}, onSubmit, onCancel }) => {
           type="button" 
           variant="outline"
           onClick={addStop}
+          disabled={stops.length === 0}
         >
           Add Stop
         </Button>
@@ -188,7 +213,10 @@ const RouteForm = ({ isEdit, initialData = {}, onSubmit, onCancel }) => {
         >
           Cancel
         </Button>
-        <Button type="submit">
+        <Button 
+          type="submit"
+          disabled={formData.stops.length < 2}
+        >
           {isEdit ? 'Update Route' : 'Create Route'}
         </Button>
       </div>

@@ -1,5 +1,4 @@
 import React from 'react';
-// import { Link } from 'react-router-dom';
 import Button from '../../common/Button';
 import Table from '../../common/Table';
 
@@ -24,9 +23,6 @@ const RouteList = ({ routes, onDelete, onEdit  }) => {
             <Table.Cell>{new Date(route.createdAt).toLocaleDateString()}</Table.Cell>
             <Table.Cell>
               <div className="flex space-x-2">
-                {/* <Link to={`/admin/routes/edit/${route._id}`}>
-                  <Button size="sm" variant="outline">Edit</Button>
-                </Link> */}
                 <Button 
                   size="sm" 
                     variant="outline"

@@ -24,6 +24,7 @@ const RouteManagementPage = () => {
     totalPages: 1
   });
   const [activeTab, setActiveTab] = useState('routes');
+  const [shouldFetch, setShouldFetch] = useState(true);
 
   const fetchRoutes = async () => {
     try {
@@ -42,6 +43,7 @@ const RouteManagementPage = () => {
       setError(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
+      setShouldFetch(false); // Add this line
     }
   };
 
@@ -56,8 +58,8 @@ const RouteManagementPage = () => {
 
   const handleCreateRoute = async (routeData) => {
     try {
-      const newRoute = await adminApi.createRoute(routeData);
-      setRoutes([newRoute, ...routes]);
+      await adminApi.createRoute(routeData);
+      refreshData(); // Instead of fetchRoutes()
       setSuccess('Route created successfully');
       setTimeout(() => setSuccess(null), 3000);
       setShowForm(false);
@@ -68,10 +70,11 @@ const RouteManagementPage = () => {
 
   const handleUpdateRoute = async (routeData) => {
     try {
-      const updatedRoute = await adminApi.updateRoute(currentRoute._id, routeData);
-      setRoutes(routes.map(route => 
-        route._id === currentRoute._id ? updatedRoute : route
-      ));
+      await adminApi.updateRoute(currentRoute._id, routeData);
+      fetchRoutes();
+      // setRoutes(routes.map(route => 
+      //   route._id === currentRoute._id ? updatedRoute : route
+      // ));
       setSuccess('Route updated successfully');
       setTimeout(() => setSuccess(null), 3000);
       setShowForm(false);
@@ -82,13 +85,15 @@ const RouteManagementPage = () => {
   };
 
   const handleDeleteRoute = async (id) => {
-    try {
-      await adminApi.deleteRoute(id);
-      setRoutes(routes.filter(route => route._id !== id));
-      setSuccess('Route deleted successfully');
-      setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
-      setError(err.response?.data?.message || err.message);
+    if(window.confirm('Are you sure you want to delete this route?')){
+      try {
+        await adminApi.deleteRoute(id);
+        setRoutes(routes.filter(route => route._id !== id));
+        setSuccess('Route deleted successfully');
+        setTimeout(() => setSuccess(null), 3000);
+      } catch (err) {
+        setError(err.response?.data?.message || err.message);
+      }
     }
   };
 
@@ -101,12 +106,16 @@ const RouteManagementPage = () => {
     setPagination(prev => ({ ...prev, page: newPage }));
   };
 
+  const refreshData = () => {
+    setShouldFetch(true);
+  };
+
   useEffect(() => {
-    if (activeTab === 'routes') {
+    if (activeTab === 'routes' && shouldFetch) {
       fetchRoutes();
       fetchStops();
     }
-  }, [pagination.page, activeTab]);
+  }, [pagination.page, activeTab, shouldFetch]); // Add shouldFetch to dependencies
 
   return (
     <div className="space-y-6">
@@ -182,6 +191,7 @@ const RouteManagementPage = () => {
         <RouteForm 
           initialData={currentRoute}
           stops={stops}
+          isEdit={!!currentRoute}
           onSubmit={currentRoute ? handleUpdateRoute : handleCreateRoute}
           onCancel={() => {
             setShowForm(false);

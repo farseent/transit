@@ -10,6 +10,7 @@ export default {
   // Bus Management
   createBus: (busData) => axios.post('/admin/buses', busData),
   assignBusToOwner: (busId, ownerId) =>  axios.put(`/admin/buses/${busId}/owner`, { ownerId }),
+  assignBusToRoute:(busId, routeId) => axios.patch(`/admin/buses/${busId}/route`, { routeId }),
   getBus: (id) => axios.get(`/admin/buses/${id}`),
   updateBus: (id, busData) => axios.put(`/admin/buses/${id}`, busData),
   deleteBus: (id) => axios.delete(`/admin/buses/${id}`),

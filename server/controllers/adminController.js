@@ -181,6 +181,38 @@ exports.assignBusToOwner = async (req, res) => {
   }
 };
 
+exports.assignBusToRoute = async (req, res) => {
+  try {
+    const { busId } = req.params;
+    const { routeId } = req.body;
+
+    // Validate inputs
+    if (!routeId) {
+      throw new BadRequestError('Route ID is required');
+    }
+
+    // Check if bus exists
+    const bus = await Bus.findById(busId);
+    if (!bus) {
+      throw new NotFoundError('Bus not found');
+    }
+
+    // Check if route exists
+    const route = await Route.findById(routeId);
+    if (!route) {
+      throw new NotFoundError('Route not found');
+    }
+
+    // Update the bus with the new route
+    bus.route = routeId;
+    await bus.save();
+
+    res.json(bus); // simpler for frontend
+  } catch (error) {
+    res.status(500).json({ message: err.message })
+  }
+};
+
 exports.getBusesPaginated = async (req, res) => {
   try {
     const { page = 1, limit = 10, search } = req.query;

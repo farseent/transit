@@ -10,6 +10,7 @@ const StopManager = () => {
   const [stops, setStops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [newStop, setNewStop] = useState({
     name: '',
@@ -58,6 +59,7 @@ const StopManager = () => {
     try {
       await adminApi.createStop(newStop);
       setShowModal(false);
+      setSuccess('Stop created successfully');
       fetchStops();
       setNewStop({
         name: '',
@@ -76,6 +78,7 @@ const StopManager = () => {
     if (window.confirm('Are you sure you want to delete this stop?')) {
       try {
         await adminApi.deleteStop(id);
+        setSuccess('Stop deleted successfully');
         fetchStops();
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to delete stop');
@@ -88,6 +91,7 @@ const StopManager = () => {
   return (
     <div className="space-y-4">
       {error && <Alert type="error" message={error} onClose={() => setError(null)} />}
+      {success && <Alert type="success" message={success} onClose={() => setSuccess(null)} />}
       
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Bus Stops</h2>

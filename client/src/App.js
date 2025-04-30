@@ -1,6 +1,6 @@
 // src/App.js
 import React from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route} from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { SearchProvider } from './context/SearchContext';
 import { AdminProvider } from './context/AdminContext';
@@ -16,7 +16,6 @@ import RegisterPage from './pages/RegisterPage';
 import NotFoundPage from './pages/NotFoundPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 
-
 // Route Configs
 import UserRoutes from './routes/UserRoutes';
 import OwnerRoutes from './routes/OwnerRoutes';
@@ -28,17 +27,13 @@ import UserProtectedRoute from './components/protected/UserProtectedRoute';
 import OwnerProtectedRoute from './components/protected/OwnerProtectedRoute';
 import AdminProtectedRoute from './components/protected/AdminProtectedRoute';
 
-
 function App() {
-
-  const location = useLocation();
-  const isAdmin = AdminRoutes.some(route=>location.pathname.startsWith(route.path))
-
   return (
       <AuthProvider>
         <SearchProvider>
           <AdminProvider>
             <Routes>
+              
               {/* Public/User/Owner Layout */}
               <Route element={<Layout />}>
                 {/* Public Routes */}
@@ -77,8 +72,6 @@ function App() {
               </Route>
 
             </Routes>
-
-          {/* </Layout> */}
           </AdminProvider>
         </SearchProvider>
       </AuthProvider>

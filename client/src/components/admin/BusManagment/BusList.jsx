@@ -1,6 +1,7 @@
 import BusOwnerAssign from "./BusOwnerAssign";
+import BusRouteAssign from "./BusRouteAssign";
 
-const BusList = ({ buses, owners, onAssignOwner }) => {
+const BusList = ({ buses, owners, routes, onAssignOwner, onAssignRoute }) => {
     return (
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white">
@@ -8,10 +9,8 @@ const BusList = ({ buses, owners, onAssignOwner }) => {
             <tr>
               <th className="py-2 px-4 border-b">Name</th>
               <th className="py-2 px-4 border-b">Reg. Number</th>
-              {/* <th className="py-2 px-4 border-b">Type</th> */}
               <th className="py-2 px-4 border-b">Route</th>
               <th className="py-2 px-4 border-b">Owner</th>
-
             </tr>
           </thead>
           <tbody>
@@ -19,8 +18,15 @@ const BusList = ({ buses, owners, onAssignOwner }) => {
               <tr key={bus._id}>
                 <td className="py-2 px-4 border-b">{bus.name}</td>
                 <td className="py-2 px-4 border-b">{bus.regNumber}</td>
-                {/* <td className="py-2 px-4 border-b capitalize">{bus.type}</td> */}
-                <td className="py-2 px-4 border-b">{bus.route}</td>
+                {/* <td className="py-2 px-4 border-b">{bus.route}</td> */}
+                <td className="py-2 px-4 border-b">
+                  <BusRouteAssign 
+                    busId={bus._id}
+                    currentRoute={bus.route}
+                    routes={routes}
+                    onAssign={onAssignRoute}
+                  />
+              </td>
                 <td className="py-2 px-4 border-b">
                   <BusOwnerAssign 
                     busId={bus._id}
@@ -29,15 +35,6 @@ const BusList = ({ buses, owners, onAssignOwner }) => {
                     onAssign={onAssignOwner}
                   />
                 </td>
-                {/* <td className="py-2 px-4 border-b">
-                  <span className={`px-2 py-1 rounded text-xs ${
-                    bus.isAvailable === 'true' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {bus.isAvailable}
-                  </span>
-                </td> */}
               </tr>
             ))}
           </tbody>

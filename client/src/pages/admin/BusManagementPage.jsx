@@ -71,7 +71,6 @@ const BusManagementPage = () => {
     }
   }
   
-
   const handleCreateBus = async (busData) => {
     try {
       const newBus = await adminApi.createBus(busData);
@@ -87,10 +86,26 @@ const BusManagementPage = () => {
   const handleAssignOwner = async (busId, ownerId) => {
     try {
       await adminApi.assignBusToOwner(busId, ownerId);
+      fetchBuses();
       setBuses(buses.map(bus => 
         bus._id === busId ? { ...bus, owner: ownerId } : bus
       ));
       setSuccess('Bus owner assigned successfully');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      setError(err.response?.data?.message || err.message);
+    }
+  };
+
+  const handleAssignRoute = async (busId, routeId) => {
+    try {
+      await adminApi.assignBusToRoute(busId, routeId);
+      fetchBuses();
+      const assignedRoute = routes.find(route => route._id === routeId);
+      setBuses(buses.map(bus => 
+        bus._id === busId ? { ...bus, route: assignedRoute } : bus
+      ));
+      setSuccess('Bus route assigned successfully');
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
@@ -132,7 +147,9 @@ const BusManagementPage = () => {
             <BusList 
               buses={buses} 
               owners={owners}
+              routes={routes}
               onAssignOwner={handleAssignOwner}
+              onAssignRoute={handleAssignRoute}
             />
           </div>
           <Pagination

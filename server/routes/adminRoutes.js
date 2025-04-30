@@ -21,6 +21,7 @@ router.get('/buses/:busId', adminController.getBus); // NEW
 router.post('/buses', adminController.createBus);
 router.put('/buses/:busId', adminController.updateBus); // NEW
 router.put('/buses/:busId/owner', adminController.assignBusToOwner);
+router.patch('/buses/:busId/route', adminController.assignBusToRoute);
 router.delete('/buses/:busId', adminController.deleteBus); // NEW
 
 // ========== ROUTE MANAGEMENT ==========
