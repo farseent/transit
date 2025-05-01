@@ -43,7 +43,7 @@ const RouteManagementPage = () => {
       setError(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
-      setShouldFetch(false); // Add this line
+      setShouldFetch(false);
     }
   };
 
@@ -58,41 +58,47 @@ const RouteManagementPage = () => {
 
   const handleCreateRoute = async (routeData) => {
     try {
+      setLoading(true);
       await adminApi.createRoute(routeData);
-      refreshData(); // Instead of fetchRoutes()
+      refreshData();
       setSuccess('Route created successfully');
       setTimeout(() => setSuccess(null), 3000);
       setShowForm(false);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleUpdateRoute = async (routeData) => {
     try {
+      setLoading(true);
       await adminApi.updateRoute(currentRoute._id, routeData);
       fetchRoutes();
-      // setRoutes(routes.map(route => 
-      //   route._id === currentRoute._id ? updatedRoute : route
-      // ));
       setSuccess('Route updated successfully');
       setTimeout(() => setSuccess(null), 3000);
       setShowForm(false);
       setCurrentRoute(null);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDeleteRoute = async (id) => {
     if(window.confirm('Are you sure you want to delete this route?')){
       try {
+        setLoading(true);
         await adminApi.deleteRoute(id);
         setRoutes(routes.filter(route => route._id !== id));
         setSuccess('Route deleted successfully');
         setTimeout(() => setSuccess(null), 3000);
       } catch (err) {
         setError(err.response?.data?.message || err.message);
+      } finally {
+        setLoading(false);
       }
     }
   };
@@ -104,6 +110,7 @@ const RouteManagementPage = () => {
 
   const handlePageChange = (newPage) => {
     setPagination(prev => ({ ...prev, page: newPage }));
+    setShouldFetch(true);
   };
 
   const refreshData = () => {
@@ -115,12 +122,12 @@ const RouteManagementPage = () => {
       fetchRoutes();
       fetchStops();
     }
-  }, [pagination.page, activeTab, shouldFetch]); // Add shouldFetch to dependencies
+  }, [pagination.page, activeTab, shouldFetch]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Route Management</h1>
+    <div className="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="sm:flex sm:justify-between sm:items-center">
+        <h1 className="text-2xl font-bold mb-4 sm:mb-0">Route Management</h1>
         {activeTab === 'routes' && (
           <Button
             onClick={() => {
@@ -128,6 +135,7 @@ const RouteManagementPage = () => {
               setShowForm(true);
             }}
             variant="primary"
+            className="w-full sm:w-auto"
           >
             Add New Route
           </Button>
@@ -149,29 +157,59 @@ const RouteManagementPage = () => {
       {activeTab === 'routes' ? (
         <>
           {loading ? (
-            <div className="flex justify-center py-8">
+            <div className="flex justify-center py-12">
               <Loader />
             </div>
           ) : routes.length > 0 ? (
             <>
               <div className="bg-white rounded-lg shadow overflow-hidden">
-                <RouteList 
-                  routes={routes} 
-                  onDelete={handleDeleteRoute}
-                  onEdit={handleEditRoute}
-                />
+                <div className="overflow-x-auto">
+                  <RouteList 
+                    routes={routes} 
+                    onDelete={handleDeleteRoute}
+                    onEdit={handleEditRoute}
+                  />
+                </div>
               </div>
               {pagination.totalPages > 1 && (
-                <Pagination
-                  currentPage={pagination.page}
-                  totalPages={pagination.totalPages}
-                  onPageChange={handlePageChange}
-                />
+                <div className="mt-6">
+                  <Pagination
+                    currentPage={pagination.page}
+                    totalPages={pagination.totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                </div>
               )}
             </>
           ) : (
-            <div className="text-center py-8 text-gray-500">
-              No routes found. Create your first route to get started.
+            <div className="text-center py-12 bg-white rounded-lg shadow">
+              <svg 
+                className="mx-auto h-12 w-12 text-gray-400" 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor" 
+                aria-hidden="true"
+              >
+                <path 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round" 
+                  strokeWidth={2} 
+                  d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" 
+                />
+              </svg>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No routes found</h3>
+              <p className="mt-1 text-sm text-gray-500">Create your first route to get started.</p>
+              <div className="mt-6">
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    setCurrentRoute(null);
+                    setShowForm(true);
+                  }}
+                >
+                  Add New Route
+                </Button>
+              </div>
             </div>
           )}
         </>
@@ -197,6 +235,7 @@ const RouteManagementPage = () => {
             setShowForm(false);
             setCurrentRoute(null);
           }}
+          loading={loading}
         />
       </Modal>
     </div>
