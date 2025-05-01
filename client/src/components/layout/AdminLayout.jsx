@@ -92,6 +92,7 @@ const AdminLayout = () => {
   const getPageTitle = () => {
     const path = location.pathname.split('/').pop();
     return path.charAt(0).toUpperCase() + path.slice(1);
+    // return <Bus />;
   };
 
   return (
@@ -107,7 +108,8 @@ const AdminLayout = () => {
             {sidebarOpen ? (
               <h1 className="text-xl font-bold">Transit Hub Admin</h1>
             ) : (
-              <h1 className="text-xl font-bold">TH</h1>
+              // <h1 className="text-xl font-bold">TH</h1>
+              <Bus />
             )}
             <button 
               onClick={() => setSidebarOpen(!sidebarOpen)}

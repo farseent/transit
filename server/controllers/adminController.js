@@ -711,11 +711,12 @@ exports.getActivityLogs = async (req, res) => {
 // System Statistics & System Settings
 exports.getSystemStats = async (req, res) => {
   try {  
-    const [users, buses, routes, reviews] = await Promise.all([
+    const [users, buses, routes, reviews, complaint] = await Promise.all([
       User.countDocuments(),
       Bus.countDocuments(),
       Route.countDocuments(),
-      Review.countDocuments()
+      Review.countDocuments(),
+      Complaint.countDocuments()
     ]);
     const recentActivity = await ActivityLog.find()
       .sort({ timestamp: -1 })
@@ -729,7 +730,8 @@ exports.getSystemStats = async (req, res) => {
         buses,
         routes,
         reviews,
-        activeBuses: await Bus.countDocuments({ isAvailable: 'true' })
+        activeBuses: await Bus.countDocuments({ isAvailable: 'true' }),
+        complaint
       },
       recentActivity
     });

@@ -63,8 +63,8 @@ function App() {
               </Route>
 
               {/* Admin Layout */}
-              <Route element={<AdminLayout />}>
                 <Route element={<AdminProtectedRoute />}>
+                  <Route element={<AdminLayout />}>
                   {AdminRoutes.map(({ path, element }, idx) => (
                     <Route key={idx} path={path} element={element} />
                   ))}
