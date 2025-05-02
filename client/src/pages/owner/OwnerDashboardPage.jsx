@@ -1,7 +1,6 @@
 // pages/OwnerDashboardPage.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import busApi from '../../api/busApi';
 import ownerApi from '../../api/ownerApi'
 import BusCard from '../../components/owner/BusCard';
 import Loader from '../../components/common/Loader';
