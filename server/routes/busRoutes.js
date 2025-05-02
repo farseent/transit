@@ -4,8 +4,6 @@ const router = express.Router();
 const { 
   getAllBuses,
   getBusById,
-  // createBus,
-  // updateBus,
   toggleBusAvailability,
   getMyBuses,
   getOwnerBusDetail,
@@ -16,8 +14,6 @@ const { protect, authorize } = require('../middleware/authMiddleware');
 router.get('/', getAllBuses);
 
 // Protected routes
-router.get('/owner/my-buses', protect, authorize('owner'), getMyBuses); // Changed from authorize to authorize('owner')
-router.put('/:id/toggle-availability', protect, toggleBusAvailability);
 router.get('/:id', getBusById);
 router.get('/owner/:busId', protect, authorize, getOwnerBusDetail);
 // router.post('/', protect, ownerProtect, createBus);

@@ -1,6 +1,6 @@
 // OwnerRoutes.js
-import OwnerBusDetailPage from '../pages/OwnerBusDetailPage';
-import OwnerDashboardPage from '../pages/OwnerDashboardPage';
+import OwnerBusDetailPage from '../pages/owner/OwnerBusDetailPage';
+import OwnerDashboardPage from '../pages/owner/OwnerDashboardPage';
 
 const OwnerRoutes = [
   { path: '/owner/dashboard', element: <OwnerDashboardPage /> },

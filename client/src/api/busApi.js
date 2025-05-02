@@ -27,34 +27,6 @@ const busApi = {
     return response.data;
   },
 
-  /**
-   * Update bus availability status
-   * @param {string} busId - ID of the bus
-   * @param {Object} availabilityData - Availability status update data
-   * @returns {Promise<Object>} Updated bus details
-   */
-  toggleBusAvailability: async (busId) => {
-    const response = await axios.put(`/buses/${busId}/toggle-availability`);
-    return response.data;
-  },
-
-  // In busApi.js
-  getOwnerBuses: async () => {
-    try {
-      console.log("[API] Making request to /buses/owner/my-buses");
-      const response = await axios.get('/buses/owner/my-buses');
-      console.log("[API] Response status:", response.status);
-      return response.data;
-    } catch (error) {
-      console.error("[API] Full error:", {
-        status: error.response?.status,
-        data: error.response?.data,
-        config: error.config
-      });
-      throw error;
-    }
-  },
-
   getOwnerBusById: async (busId) =>{
     try {
       console.log('sending request with busId',busId);

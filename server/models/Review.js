@@ -11,22 +11,6 @@ const ReviewSchema = new mongoose.Schema({
     ref: 'Bus',
     required: true
   },
-  // journey: {
-  //   fromStop: {
-  //     type: mongoose.Schema.Types.ObjectId,
-  //     ref: 'Stop',
-  //     required: true
-  //   },
-  //   toStop: {
-  //     type: mongoose.Schema.Types.ObjectId,
-  //     ref: 'Stop',
-  //     required: true
-  //   },
-  //   date: {
-  //     type: Date,
-  //     required: true
-  //   }
-  // },
   ratings: {
     cleanliness: {
       type: Number,

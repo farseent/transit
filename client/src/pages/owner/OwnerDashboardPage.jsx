@@ -1,11 +1,12 @@
 // pages/OwnerDashboardPage.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import busApi from '../api/busApi';
-import BusCard from '../components/owner/BusCard';
-import Loader from '../components/common/Loader';
-import Alert from '../components/common/Alert';
-import { useAuth } from '../context/AuthContext';
+import busApi from '../../api/busApi';
+import ownerApi from '../../api/ownerApi'
+import BusCard from '../../components/owner/BusCard';
+import Loader from '../../components/common/Loader';
+import Alert from '../../components/common/Alert';
+import { useAuth } from '../../context/AuthContext';
 
 const OwnerDashboardPage = () => {
   const [buses, setBuses] = useState([]);
@@ -19,15 +20,11 @@ const OwnerDashboardPage = () => {
   useEffect(() => {
     const fetchBuses = async () => {
       try {
-        console.log("[DEBUG] Starting fetch...");
-        const data = await busApi.getOwnerBuses();
-        console.log('[DEBUG] Received data', data);
-        
+        const data = await ownerApi.getOwnerBuses();  
         if (!Array.isArray(data)) {
           console.error("[ERROR] Expected array but got:", typeof data);
           throw new Error("Invalid data format");
         }
-        
         setBuses(data);
       } catch (err) {
         console.error("[ERROR] Fetch failed:", err);
@@ -43,15 +40,11 @@ const OwnerDashboardPage = () => {
   const handleToggleAvailability = async (busId) => {
     try {
       setLoading(true);
-      const updatedBus = await busApi.toggleBusAvailability(busId);
+      const updatedBus = await ownerApi.toggleBusAvailability(busId);
       setBuses(buses.map(bus =>
         bus._id === updatedBus._id ? updatedBus : bus
       ));
-      
-      // Show success feedback
       setError({ type: 'success', message: `Bus ${updatedBus.name} status updated successfully!` });
-      
-      // Clear success message after 3 seconds
       setTimeout(() => setError(null), 3000);
     } catch (err) {
       setError({ type: 'error', message: err.message || 'Failed to update bus availability' });
@@ -63,8 +56,6 @@ const OwnerDashboardPage = () => {
   const handleViewDetails = (busId) => {
     navigate(`/owner/buses/${busId}`);
   };
-
-  // Filter buses based on status and search term
   const filteredBuses = buses.filter(bus => {
     const matchesFilter = 
       filterStatus === 'all' || 
