@@ -59,12 +59,12 @@ const UserManagementPage = () => {
     }
   };
 
-  const handleRoleChange = async (userId, newRole) => {
+  const handleRoleChange = async (userId, newRole) => {    
     try {
       await adminApi.updateUserRole(userId, newRole);
       setUsers(users.map(user => 
         user._id === userId ? { ...user, role: newRole } : user
-      ));
+      ));      
       setSuccess(`User role updated to ${getUserRoleName(newRole)}`);
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
@@ -167,6 +167,7 @@ const UserManagementPage = () => {
                   <option value="user">Users</option>
                   <option value="owner">Owners</option>
                   <option value="admin">Admins</option>
+                  <option value="admin">RTO</option>
                 </select>
               </div>
               
@@ -234,15 +235,6 @@ const UserManagementPage = () => {
               </Button>
             </div>
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              {/* <div>
-                <p className="text-sm text-gray-700">
-                  Showing <span className="font-medium">{(pagination.page - 1) * pagination.limit + 1}</span> to{' '}
-                  <span className="font-medium">
-                    {Math.min(pagination.page * pagination.limit, pagination.totalUsers)}
-                  </span>{' '}
-                  of <span className="font-medium">{pagination.totalUsers}</span> results
-                </p>
-              </div> */}
               <Pagination
                 currentPage={pagination.page}
                 totalPages={pagination.totalPages}

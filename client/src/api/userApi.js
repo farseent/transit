@@ -59,7 +59,7 @@ export const getProfile = async () => {
  * @returns {Promise<Object>} Updated user profile
  */
 export const updateProfile = async (profileData) => {
-  const response = await axiosInstance.patch('/users/profile', profileData);
+  const response = await axiosInstance.put('/users/profile', profileData);
   return response.data;
 };
 

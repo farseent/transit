@@ -39,7 +39,7 @@ exports.getOwnerBusDetail = async (req, res) => {
   try {
     const { busId } = req.params;
     const bus = await Bus.findById(busId)
-      .populate('route', 'startPoint endPoint stops')
+      .populate('route', 'name')
       .populate({
         path: 'reviews',
         populate: {

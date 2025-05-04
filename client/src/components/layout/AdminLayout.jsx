@@ -240,17 +240,6 @@ const AdminLayout = () => {
               </h2>
             </div>
             <div className="flex items-center">
-              <div className="relative">
-                <button 
-                  className="p-2 rounded-full hover:bg-gray-100 text-gray-600"
-                  aria-label={`${notifications} notifications`}
-                >
-                  <Bell size={20} />
-                  {notifications > 0 && (
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                  )}
-                </button>
-              </div>
               <div className="relative ml-3">
                 <button 
                   onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -273,14 +262,6 @@ const AdminLayout = () => {
                     role="menu"
                     aria-orientation="vertical"
                   >
-                    <Link 
-                      to="/admin/profile" 
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => setDropdownOpen(false)}
-                      role="menuitem"
-                    >
-                      Your Profile
-                    </Link>
                     <Link 
                       to="/admin/settings" 
                       className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

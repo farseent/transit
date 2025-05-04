@@ -2,169 +2,181 @@
 import React, { useState } from 'react';
 import Table from '../common/Table';
 import Pagination from '../common/Pagination';
-import Modal from '../common/Modal';
 import { useNavigate } from 'react-router-dom';
+import { HiSearch, HiFilter, HiBadgeCheck, HiClock, HiExclamation } from 'react-icons/hi';
 
 const ComplaintList = ({ 
   complaints, 
   loading, 
-  updateComplaintStatus, 
   totalComplaints, 
   currentPage, 
-  onPageChange 
+  onPageChange,
+  totalPage
 }) => {
-  const [selectedComplaint, setSelectedComplaint] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [statusUpdate, setStatusUpdate] = useState('');
-  const [comment, setComment] = useState('');
   const navigate = useNavigate();
-
-  let onRowClick = (complaint) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  
+  const handleRowClick = (complaint) => {
     navigate(`/rto/complaints/${complaint._id}`);
   };
 
-  const handleOpenModal = (complaint) => {
-    setSelectedComplaint(complaint);
-    setStatusUpdate(complaint.status);
-    setComment('');
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedComplaint(null);
-  };
-
-  const handleSubmit = () => {
-    updateComplaintStatus(selectedComplaint._id, {
-      status: statusUpdate,
-      rtoComment: comment
-    });
-    handleCloseModal();
-  };
+  // Filter complaints based on search term and status filter
+  const filteredComplaints = complaints.filter(complaint => {
+    const matchesSearch = searchTerm === '' || 
+      (complaint.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+       complaint.bus?.regNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+       complaint.category?.toLowerCase().includes(searchTerm.toLowerCase()));
+       
+    const matchesStatus = filterStatus === '' || complaint.status === filterStatus;
+    
+    return matchesSearch && matchesStatus;
+  });
 
   const columns = [
     { header: 'User', accessor: 'user.name' },
     { header: 'Bus', accessor: 'bus.name' },
     { header: 'Reg Number', accessor: 'bus.regNumber' },
     { header: 'Category', accessor: 'category' },
-    { header: 'Status', accessor: 'status', 
+    { 
+      header: 'Status', 
+      accessor: 'status', 
       cell: (complaint) => {
-        const statusColors = {
-          'pending': 'bg-yellow-100 text-yellow-800',
-          'inprogress': 'bg-blue-100 text-blue-800',
-          'resolved': 'bg-green-100 text-green-800',
-          'rejected': 'bg-red-100 text-red-800'
+        const statusConfig = {
+          'pending': { 
+            color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+            icon: <HiClock className="mr-1" />
+          },
+          'inprogress': { 
+            color: 'bg-blue-100 text-blue-800 border-blue-200',
+            icon: <HiExclamation className="mr-1" />
+          },
+          'resolved': { 
+            color: 'bg-green-100 text-green-800 border-green-200',
+            icon: <HiBadgeCheck className="mr-1" />
+          },
+          'rejected': { 
+            color: 'bg-red-100 text-red-800 border-red-200',
+            icon: <HiExclamation className="mr-1" />
+          }
         };
+        
+        const { color, icon } = statusConfig[complaint.status] || { 
+          color: 'bg-gray-100 text-gray-800 border-gray-200', 
+          icon: null 
+        };
+        
         return (
-          <span className={`px-2 py-1 rounded-full text-xs ${statusColors[complaint.status] || 'bg-gray-100'}`}>
+          <span className={`px-3 py-1 rounded-full text-xs flex items-center justify-center border ${color} whitespace-nowrap`}>
+            {icon}
             {complaint.status}
           </span>
         );
       }
     },
-    { header: 'Date', accessor: 'createdAt', 
+    { 
+      header: 'Date', 
+      accessor: 'createdAt', 
       cell: (complaint) => new Date(complaint.createdAt).toLocaleDateString()
     },
-    { header: 'Actions', 
+    { 
+      header: 'Actions', 
       cell: (complaint) => (
         <button 
-          onClick={() => handleOpenModal(complaint)} 
-          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/rto/complaints/${complaint._id}`);
+          }}
+          className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm transition-colors duration-200 whitespace-nowrap"
         >
-          Update
+          View Details
         </button>
       )
     },
   ];
 
+  const statusOptions = [
+    { value: '', label: 'All Statuses' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'inprogress', label: 'In Progress' },
+    { value: 'resolved', label: 'Resolved' },
+    { value: 'rejected', label: 'Rejected' }
+  ];
+
+  const LoadingState = () => (
+    <div className="flex flex-col items-center justify-center py-12">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+      <p className="text-gray-600">Loading complaints...</p>
+    </div>
+  );
+
   return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-xl font-bold mb-4">Manage Complaints</h2>
+    <div>
+      <div className="mb-6">
+        <div className="flex flex-col md:flex-row gap-4 mb-4">
+          {/* Search input */}
+          <div className="relative flex-grow">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <HiSearch className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search by user, bus number or category..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          
+          {/* Status filter */}
+          <div className="relative w-full md:w-48">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <HiFilter className="h-5 w-5 text-gray-400" />
+            </div>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full focus:ring-blue-500 focus:border-blue-500"
+            >
+              {statusOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        
+        <div className="bg-gray-50 rounded-md p-3 text-sm text-gray-600">
+          Showing {filteredComplaints.length} of {totalComplaints} total complaints
+        </div>
+      </div>
       
       {loading ? (
-        <div className="flex justify-center p-8">
-          <p>Loading complaints...</p>
-        </div>
+        <LoadingState />
       ) : (
         <>
-          <Table 
-            data={complaints} 
-            columns={columns}
-            onRowClick={onRowClick} 
-            emptyMessage="No complaints found"
-          />
+          <div className="overflow-x-auto">
+            <Table 
+              data={filteredComplaints} 
+              columns={columns}
+              onRowClick={handleRowClick} 
+              emptyMessage="No complaints found"
+              className="min-w-full"
+              rowClassName="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+            />
+          </div>
           
-          <div className="mt-4">
+          <div className="mt-6">
             <Pagination 
               totalItems={totalComplaints}
               itemsPerPage={10}
               currentPage={currentPage}
               onPageChange={onPageChange}
+              totalPage={totalPage}
             />
           </div>
         </>
-      )}
-
-      {isModalOpen && selectedComplaint && (
-        <Modal 
-          isOpen={isModalOpen} 
-          onClose={handleCloseModal}
-          title="Update Complaint Status"
-        >
-          <div className="mb-4">
-            <p><strong>User:</strong> {selectedComplaint.user?.name}</p>
-            <p><strong>Bus:</strong> {selectedComplaint.bus?.name}</p>
-            <p><strong>Reg Number:</strong> {selectedComplaint.bus?.regNumber}</p>
-            <p><strong>Category:</strong> {selectedComplaint.category}</p>
-            <p><strong>Description:</strong> {selectedComplaint.description}</p>
-            <p><strong>Submitted:</strong> {new Date(selectedComplaint.createdAt).toLocaleString()}</p>
-          </div>
-          
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Status
-            </label>
-            <select
-              value={statusUpdate}
-              onChange={(e) => setStatusUpdate(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
-            >
-              <option value="pending">Pending</option>
-              <option value="in-progress">In Progress</option>
-              <option value="resolved">Resolved</option>
-              <option value="rejected">Rejected</option>
-            </select>
-          </div>
-          
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Comment
-            </label>
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md"
-              rows="3"
-              placeholder="Add a comment about this complaint status update..."
-            ></textarea>
-          </div>
-          
-          <div className="flex justify-end mt-4">
-            <button
-              onClick={handleCloseModal}
-              className="mr-2 px-4 py-2 border border-gray-300 rounded-md text-sm"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSubmit}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600"
-            >
-              Update Status
-            </button>
-          </div>
-        </Modal>
       )}
     </div>
   );

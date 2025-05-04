@@ -6,6 +6,7 @@ import { SearchProvider } from './context/SearchContext';
 import { AdminProvider } from './context/AdminContext';
 import Layout from './components/layout/Layout';
 import AdminLayout from './components/layout/AdminLayout';
+import RTOLayout from './components/layout/RTOLayout';
 
 // Public Pages 
 import HomePage from './pages/HomePage';
@@ -61,15 +62,18 @@ function App() {
                   ))}
                 </Route>
 
-                <Route element={<RTOProtectedRoute />}>
-                  {RTORoutes.map(({ path, element }, idx) => (
-                    <Route key={idx} path={path} element={element} />
-                  ))}
-                </Route>
 
                 {/* Catch-All for Not Found */}
                 <Route path="*" element={<NotFoundPage />} />
               </Route>
+
+                <Route element={<RTOProtectedRoute />}>
+                  <Route element={<RTOLayout />}>
+                  {RTORoutes.map(({ path, element }, idx) => (
+                    <Route key={idx} path={path} element={element} />
+                  ))}
+                  </Route>
+                </Route>
 
               {/* Admin Layout */}
                 <Route element={<AdminProtectedRoute />}>

@@ -4,10 +4,12 @@ export const getUserRoleName = (role) => {
     switch (role) {
       case 'admin':
         return 'Admin';
-      case 'moderator':
-        return 'Moderator';
+      case 'owner':
+        return 'Owner';
       case 'user':
         return 'User';
+      case 'rto':
+        return 'RTO';
       default:
         return 'Unknown';
     }

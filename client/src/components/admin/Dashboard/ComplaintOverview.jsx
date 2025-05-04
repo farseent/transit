@@ -43,16 +43,7 @@ const ComplaintOverview = () => {
     <div className="bg-white p-6 rounded-lg shadow">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Recent Complaints</h2>
-        {complaints.length > 0 && (
-          <a href="/admin/complaints" className="text-blue-600 hover:text-blue-800 text-sm flex items-center">
-            View all
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-            </svg>
-          </a>
-        )}
       </div>
-      
       {/* Filter buttons */}
       <div className="flex flex-wrap gap-2 mb-4">
         <FilterButton 

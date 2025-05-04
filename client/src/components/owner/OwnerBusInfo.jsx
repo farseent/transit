@@ -2,6 +2,8 @@
 import { useState } from 'react';
 
 const OwnerBusInfo = ({ bus }) => {
+  console.log('data reaches in owner businfo :',bus);
+  
   const [expandedSection, setExpandedSection] = useState(null);
 
   const toggleSection = (section) => {

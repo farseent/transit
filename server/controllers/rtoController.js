@@ -38,7 +38,7 @@ exports.getComplaints = async (req, res) => {
     // Get total count for pagination
     const total = await Complaint.countDocuments(filter);
     
-    console.log('Data sending from getComplaints =',complaints );
+    console.log('Data sending from getComplaints =',page );
     
 
     res.status(200).json({

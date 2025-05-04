@@ -6,9 +6,8 @@ const {
   loginUser, 
   getUserProfile, 
   getUserReviews,
-  getUserComplaints
-  // updateUserProfile,
-  // getUserHistory 
+  getUserComplaints,
+  updateUserProfile
 } = require('../controllers/userController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -20,7 +19,6 @@ router.post('/login', loginUser);
 router.get('/profile', protect, getUserProfile);
 router.get('/reviews', protect, getUserReviews); // Make sure this is added
 router.get('/complaints', protect, getUserComplaints); // Make sure this is added
-// router.put('/profile', protect, updateUserProfile);
-// router.get('/history', protect, getUserHistory);
+router.put('/profile', protect, updateUserProfile);
 
 module.exports = router;

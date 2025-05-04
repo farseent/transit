@@ -11,7 +11,7 @@ const RoleManager = ({ currentRole, userId, onRoleChange, isMobile = false }) =>
   };
   
   const handleSave = () => {
-    if (selectedRole !== currentRole) {
+    if (selectedRole !== currentRole) {    
       onRoleChange(userId, selectedRole);
     }
     setIsEditing(false);
@@ -40,7 +40,7 @@ const RoleManager = ({ currentRole, userId, onRoleChange, isMobile = false }) =>
             <option value="user">User</option>
             <option value="owner">Owner</option>
             <option value="admin">Admin</option>
-            <option value="admin">Rto</option>
+            <option value="rto">Rto</option>
           </select>
           <button 
             onClick={handleSave}
