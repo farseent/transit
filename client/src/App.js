@@ -20,12 +20,15 @@ import UnauthorizedPage from './pages/UnauthorizedPage';
 import UserRoutes from './routes/UserRoutes';
 import OwnerRoutes from './routes/OwnerRoutes';
 import AdminRoutes from './routes/AdminRoutes';
+import RTORoutes from './routes/RTORoutes';
+
 
 // Protected Route Component
 import PublicRoute from './components/protected/PublicRoute';
 import UserProtectedRoute from './components/protected/UserProtectedRoute';
 import OwnerProtectedRoute from './components/protected/OwnerProtectedRoute';
 import AdminProtectedRoute from './components/protected/AdminProtectedRoute';
+import RTOProtectedRoute from './components/protected/RTOProtectedRoute';
 
 function App() {
   return (
@@ -54,6 +57,12 @@ function App() {
                 {/* Owner Routes */}
                 <Route element={<OwnerProtectedRoute />}>
                   {OwnerRoutes.map(({ path, element }, idx) => (
+                    <Route key={idx} path={path} element={element} />
+                  ))}
+                </Route>
+
+                <Route element={<RTOProtectedRoute />}>
+                  {RTORoutes.map(({ path, element }, idx) => (
                     <Route key={idx} path={path} element={element} />
                   ))}
                 </Route>

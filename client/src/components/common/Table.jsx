@@ -1,22 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-const Table = ({ headers, children, className = '' }) => {
+const Table = ({ headers, children, data, columns, className = '', onRowClick, emptyMessage = 'No data found' }) => {
   const isCompoundStructure = React.Children.toArray(children).some(
     (child) => child?.type?.displayName?.includes('Table')
   );
 
+  const shouldRenderFromProps = !isCompoundStructure && data && columns;
   return (
     <div className={`overflow-x-auto ${className}`}>
       <table className="min-w-full divide-y divide-gray-200">
-        {/* If using default headers */}
-        {headers && (
+        {(headers || columns) && (
           <thead className="bg-gray-50">
             <tr>
-              {headers.map((header, index) => (
-                <th 
+              {(headers || columns.map(col => col.header)).map((header, index) => (
+                <th
                   key={index}
-                  scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
                   {header}
@@ -26,14 +25,32 @@ const Table = ({ headers, children, className = '' }) => {
           </thead>
         )}
 
-        {/* Render children directly if compound structure is used */}
         {isCompoundStructure ? (
           children
-        ) : (
+        ) : shouldRenderFromProps ? (
           <tbody className="bg-white divide-y divide-gray-200">
-            {children}
+            {data.length > 0 ? (
+              data.map((row, rowIndex) => (
+                <tr key={rowIndex} className="hover:bg-gray-50" onClick={() => onRowClick?.(row)}>
+                  {columns.map((col, colIndex) => {
+                    const value = col.accessor?.split('.').reduce((acc, key) => acc?.[key], row);
+                    return (
+                      <td key={colIndex} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {col.cell ? col.cell(row) : value}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={columns.length} className="text-center px-6 py-4 text-sm text-gray-500">
+                  {emptyMessage}
+                </td>
+              </tr>
+            )}
           </tbody>
-        )}
+        ) : null}
       </table>
     </div>
   );
@@ -50,8 +67,13 @@ const Body = ({ children }) => (
 );
 Body.displayName = 'TableBody';
 
-const Row = ({ children }) => (
-  <tr className="hover:bg-gray-50">{children}</tr>
+const Row = ({ children, onClick }) => (
+  <tr 
+    className="hover:bg-gray-50"
+    onClick={onClick}
+    >
+      {children}
+    </tr>
 );
 Row.displayName = 'TableRow';
 
@@ -80,13 +102,18 @@ Table.Cell = Cell;
 
 Table.propTypes = {
   headers: PropTypes.arrayOf(PropTypes.string),
+  data: PropTypes.array,
+  columns: PropTypes.array,
   children: PropTypes.node.isRequired,
-  className: PropTypes.string
+  className: PropTypes.string,
+  emptyMessage: PropTypes.string,
+  onRowClick: PropTypes.func,
 };
 
 Table.defaultProps = {
   headers: null,
-  className: ''
+  className: '',
+  onRowClick: null,
 };
 
 export default Table;

@@ -40,6 +40,7 @@ const RoleManager = ({ currentRole, userId, onRoleChange, isMobile = false }) =>
             <option value="user">User</option>
             <option value="owner">Owner</option>
             <option value="admin">Admin</option>
+            <option value="admin">Rto</option>
           </select>
           <button 
             onClick={handleSave}

@@ -20,6 +20,7 @@ const searchRoutes = require('./routes/searchRoutes');
 const complaintRoutes = require('./routes/complaintRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const ownerRoutes = require('./routes/ownerRoutes')
+const rtoRoutes = require('./routes/rtoRoutes')
 
 const app = express();
 
@@ -80,6 +81,7 @@ app.use('/api/search', searchRoutes);
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/owner', ownerRoutes);
+app.use('/api/rto', rtoRoutes);
 
 // Basic route
 app.get('/', (req, res) => {

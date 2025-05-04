@@ -113,6 +113,7 @@ export const AuthProvider = ({ children }) => {
   };
   
   const isOwner = user?.role === 'owner';
+  const isRTO = user?.role === 'rto';
   
   const value = {
     user,
@@ -124,6 +125,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     isAuthenticated: authState.isAuthenticated,
     isOwner,
+    isRTO,
   };
   
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

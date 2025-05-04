@@ -17,8 +17,10 @@ const PublicRoute = ({ children }) => {
   else if (isAuthenticated && user?.role === "admin"){
     return <Navigate to="/admin/dashboard" replace />;
   }
+  else if (isAuthenticated && user?.role === "rto"){
+    return <Navigate to="/rto/dashboard" replace />;
+  }
 
-  // Else allow to view the page
   return children;
 };
 
