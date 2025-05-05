@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Star, AlertCircle, X, MessageSquare, ChevronLeft } from 'lucide-react';
 import busApi from '../api/busApi';
-import { addReview } from '../api/reviewApi';
+import { addReview, updateReview, deleteReview } from '../api/reviewApi';
 import { addComplaint } from '../api/complaintApi';
 import { useAuth } from '../context/AuthContext';
 
@@ -10,6 +10,7 @@ import BusInfo from '../components/busDetails/BusInfo';
 import ReviewList from '../components/busDetails/ReviewList';
 import ReviewForm from '../components/busDetails/ReviewForm';
 import ComplaintForm from '../components/busDetails/ComplaintForm';
+import DeleteConfirmationModal from '../components/common/DeleteConformationModal';
 import Loader from '../components/common/Loader';
 import Alert from '../components/common/Alert';
 
@@ -22,7 +23,7 @@ const BusDetailPage = () => {
   const arrivalTime = searchParams.get('arrivalTime');
   const navigate = useNavigate();
   
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [bus, setBus] = useState(null);
   const [fromStop, setFromStop] = useState(null);
   const [toStop, setToStop] = useState(null);
@@ -32,6 +33,16 @@ const BusDetailPage = () => {
   const [alert, setAlert] = useState(null);
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showComplaintForm, setShowComplaintForm] = useState(false);
+  
+  // New state for editing reviews
+  const [editingReview, setEditingReview] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [reviewToDelete, setReviewToDelete] = useState(null);
+  
+  // Check if user has already reviewed this bus
+  const userReview = isAuthenticated 
+    ? reviews.find(review => review.user?._id === user?.id) 
+    : null;
 
   useEffect(() => {
     const fetchBusDetails = async () => {
@@ -43,8 +54,6 @@ const BusDetailPage = () => {
         setFromStop(busData.fromStop);
         setToStop(busData.toStop);
         setLoading(false);
-        console.log('search results received in the bus detail page =', busData);
-
       } catch (err) {
         console.error('Error fetching bus details:', err);
         setError('Failed to load bus details');
@@ -73,6 +82,41 @@ const BusDetailPage = () => {
     }
   };
 
+  // New function to handle editing reviews
+  const handleEditReview = async (reviewData) => {
+    try {
+      const response = await updateReview(reviewData._id, reviewData);
+      // Update the review in the local state
+      const updatedReviews = reviews.map(review => 
+        review._id === reviewData._id ? response : review
+      );
+      setReviews(updatedReviews);
+      setEditingReview(null);
+      setAlert({ type: 'success', message: 'Review updated successfully!' });
+      setTimeout(() => setAlert(null), 3000);
+    } catch (err) {
+      setAlert({ type: 'danger', message: err.message || 'Failed to update review' });
+      setTimeout(() => setAlert(null), 3000);
+    }
+  };
+
+  // Function to handle deleting reviews
+  const handleDeleteReview = async (reviewId) => {
+    try {
+      await deleteReview(reviewId);
+      // Remove the review from the local state
+      const updatedReviews = reviews.filter(review => review._id !== reviewId);
+      setReviews(updatedReviews);
+      setShowDeleteModal(false);
+      setReviewToDelete(null);
+      setAlert({ type: 'success', message: 'Review deleted successfully!' });
+      setTimeout(() => setAlert(null), 3000);
+    } catch (err) {
+      setAlert({ type: 'danger', message: err.message || 'Failed to delete review' });
+      setTimeout(() => setAlert(null), 3000);
+    }
+  };
+
   const handleAddComplaint = async (complaintData) => {
     try {
       await addComplaint(id, complaintData);
@@ -87,7 +131,13 @@ const BusDetailPage = () => {
 
   const handleReviewButtonClick = () => {
     if (isAuthenticated) {
-      setShowReviewForm(!showReviewForm);
+      // If user has already reviewed and is not editing, let them edit
+      if (userReview && !editingReview) {
+        setEditingReview(userReview);
+      } else {
+        setShowReviewForm(!showReviewForm);
+        setEditingReview(null);
+      }
       setShowComplaintForm(false); // Close complaint form if open
     } else {
       setAlert({ type: 'warning', message: 'Please login to add a review' });
@@ -102,6 +152,7 @@ const BusDetailPage = () => {
     if (isAuthenticated) {
       setShowComplaintForm(!showComplaintForm);
       setShowReviewForm(false); // Close review form if open
+      setEditingReview(null); // Cancel any editing
     } else {
       setAlert({ type: 'warning', message: 'Please login to report a complaint' });
       setTimeout(() => {
@@ -115,6 +166,33 @@ const BusDetailPage = () => {
     navigate(-1);
   };
 
+  // Handler for edit button click in the review list
+  const handleEditClick = (review) => {
+    setEditingReview(review);
+    setShowReviewForm(false);
+    setShowComplaintForm(false);
+    // window.scrollTo({
+    //   top: 0,
+    //   behavior: 'smooth'
+    // });
+    // Wait for next render tick then scroll to form
+    setTimeout(() => {
+      const formElement = document.getElementById('edit-review-form');
+      formElement?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 50);
+  };
+
+  // Handler for delete button click in the review list
+  const handleDeleteClick = (reviewId) => {
+    setReviewToDelete(reviewId);
+    setShowDeleteModal(true);
+  };
+
+  // Handler for cancel button in the edit form
+  const handleCancelEdit = () => {
+    setEditingReview(null);
+  };
+
   if (loading) return <Loader />;
   if (error) return <Alert type="danger" message={error} />;
   if (!bus) return <Alert type="warning" message="Bus not found" />;
@@ -126,6 +204,13 @@ const BusDetailPage = () => {
           <Alert type={alert.type} message={alert.message} />
         </div>
       )}
+      
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal 
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={() => handleDeleteReview(reviewToDelete)}
+      />
       
       {/* Back button */}
       <div className="max-w-5xl mx-auto px-4 pt-6">
@@ -157,20 +242,20 @@ const BusDetailPage = () => {
           <button 
             onClick={handleReviewButtonClick}
             className={`flex-1 flex items-center justify-center gap-2 rounded-md px-4 py-3 font-medium transition-all duration-200 ${
-              showReviewForm 
+              showReviewForm || editingReview
                 ? 'bg-gray-200 text-gray-700 hover:bg-gray-300' 
                 : 'bg-primary-500 text-white hover:bg-primary-600'
             }`}
           >
-            {showReviewForm ? (
+            {showReviewForm || editingReview ? (
               <>
                 <X size={16} />
-                Cancel Review
+                Cancel {userReview ? 'Edit' : 'Review'}
               </>
             ) : (
               <>
                 <Star size={16} />
-                Add Review
+                {userReview ? 'Edit Review' : 'Add Review'}
               </>
             )}
           </button>
@@ -200,10 +285,19 @@ const BusDetailPage = () => {
         {/* Form Sections */}
         {showReviewForm && isAuthenticated && (
           <div className="bg-white rounded-lg shadow-card p-6 mb-6 border-l-4 border-primary-500">
-            <h3 className="text-lg font-semibold mb-4 text-primary-600">Add Your Review</h3>
             <ReviewForm 
               onSubmit={handleAddReview} 
               onCancel={() => setShowReviewForm(false)} 
+            />
+          </div>
+        )}
+        
+        {editingReview && (
+          <div id="edit-review-form" className="bg-white rounded-lg shadow-card p-6 mb-6 border-l-4 border-primary-500">
+            <ReviewForm 
+              onSubmit={handleEditReview} 
+              onCancel={handleCancelEdit}
+              initialData={editingReview}
             />
           </div>
         )}
@@ -232,7 +326,12 @@ const BusDetailPage = () => {
 
           <div className="p-6">
             {reviews.length > 0 ? (
-              <ReviewList reviews={reviews} />
+              <ReviewList 
+                reviews={reviews} 
+                currentUserId={user?._id || user?.id}
+                onEditReview={handleEditClick}
+                onDeleteReview={handleDeleteClick}
+              />
             ) : (
               <div className="text-center py-10 text-gray-500">
                 <p className="mb-4">No reviews yet for this bus.</p>

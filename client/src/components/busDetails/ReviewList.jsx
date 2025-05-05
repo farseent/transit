@@ -1,8 +1,9 @@
 import React from 'react';
 import Rating from '../common/Rating';
-import { User, Star } from 'lucide-react';
+import { User, Star, Edit, Trash2 } from 'lucide-react';
 
-const ReviewList = ({ reviews }) => {
+const ReviewList = ({ reviews, currentUserId, onEditReview, onDeleteReview }) => {
+
   if (reviews.length === 0) {
     return (
       <div className="text-center text-gray-500 py-4">
@@ -11,7 +12,6 @@ const ReviewList = ({ reviews }) => {
     );
   }
 
-  
   return (
     <div className="space-y-4">
       {reviews.map((review) => {
@@ -22,6 +22,9 @@ const ReviewList = ({ reviews }) => {
            review.ratings.punctuality + 
            review.ratings.staffBehavior) / 4 : 
           null;
+        
+        // Check if current user is the author of this review
+        const isAuthor = currentUserId && review.user._id === currentUserId;
         
         return (
           <div key={review._id} className="bg-gray-50 p-4 rounded-lg">
@@ -57,9 +60,31 @@ const ReviewList = ({ reviews }) => {
               <p className="text-gray-700 italic">"{review.comment}"</p>
             )}
 
-            <p className="text-xs text-gray-500 mt-2">
-              {new Date(review.createdAt).toLocaleDateString()}
-            </p>
+            <div className="flex justify-between items-center mt-2">
+              <p className="text-xs text-gray-500">
+                {new Date(review.createdAt).toLocaleDateString()}
+              </p>
+              
+              {/* Show edit/delete options only if the user is the author */}
+              {isAuthor && (
+                <div className="flex space-x-2">
+                  <button 
+                    onClick={() => onEditReview(review)}
+                    className="flex items-center text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                  >
+                    <Edit size={14} className="mr-1" />
+                    Edit
+                  </button>
+                  <button 
+                    onClick={() => onDeleteReview(review._id)}
+                    className="flex items-center text-xs text-red-600 hover:text-red-800 transition-colors"
+                  >
+                    <Trash2 size={14} className="mr-1" />
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         );
       })}
