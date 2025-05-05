@@ -63,7 +63,7 @@ const UserInfo = ({ user }) => {
         </div>
       </div>
       
-      <div className="border-t border-gray-200 pt-6 mt-6">
+      {/* <div className="border-t border-gray-200 pt-6 mt-6">
         <h3 className="text-lg font-semibold mb-4">Account Actions</h3>
         <div className="flex flex-wrap gap-3">
           <button className="bg-primary-500 text-white px-4 py-2 rounded-md hover:bg-primary-600 transition-colors">
@@ -76,7 +76,7 @@ const UserInfo = ({ user }) => {
             Delete Account
           </button>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

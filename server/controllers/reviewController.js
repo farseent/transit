@@ -71,70 +71,89 @@ exports.createReview = async (req, res) => {
 };
 
 // Update a review
-// exports.updateReview = async (req, res) => {
-//   try {
-//     const review = await Review.findById(req.params.id);
+exports.updateReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { ratings, comment } = req.body;
     
-//     if (!review) {
-//       return res.status(404).json({ message: 'Review not found' });
-//     }
+    // Validate ratings
+    if (!ratings || !ratings.cleanliness || !ratings.punctuality || 
+        !ratings.staffBehavior || !ratings.comfort) {
+      return res.status(400).json({ 
+        message: 'All ratings (cleanliness, punctuality, staffBehavior, comfort) are required' 
+      });
+    }
     
-//     // Check if user is the owner of this review
-//     if (review.user.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-//       return res.status(403).json({ message: 'Not authorized to update this review' });
-//     }
+    // Find the review
+    const review = await Review.findById(id);
     
-//     const { 
-//       cleanliness, 
-//       punctuality, 
-//       staffBehavior, 
-//       comfort, 
-//       comment 
-//     } = req.body;
+    // Check if review exists
+    if (!review) {
+      return res.status(404).json({ message: 'Review not found' });
+    }
     
-//     // Calculate new overall rating
-//     const overallRating = (
-//       (cleanliness + punctuality + staffBehavior + comfort) / 4
-//     ).toFixed(1);
+    // Verify ownership (only allow users to edit their own reviews)
+    if (review.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to update this review' });
+    }
     
-//     review.cleanliness = cleanliness || review.cleanliness;
-//     review.punctuality = punctuality || review.punctuality;
-//     review.staffBehavior = staffBehavior || review.staffBehavior;
-//     review.comfort = comfort || review.comfort;
-//     review.overallRating = parseFloat(overallRating);
-//     review.comment = comment || review.comment;
+    // Update review fields
+    review.ratings.cleanliness = ratings.cleanliness;
+    review.ratings.punctuality = ratings.punctuality;
+    review.ratings.staffBehavior = ratings.staffBehavior;
+    review.ratings.comfort = ratings.comfort;
+    review.comment = comment || review.comment;
     
-//     const updatedReview = await review.save();
+    // Save updated review
+    const updatedReview = await review.save();
     
-//     // Update bus average ratings
-//     await updateBusRatings(review.bus);
+    // getAverageRatings will be called automatically via the post-save hook in the Review model
     
-//     res.json(updatedReview);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Server error', error: error.message });
-//   }
-// };
+    res.status(200).json(updatedReview);
+  } catch (error) {
+    console.error('Error updating review:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to update review',
+      error: error.message
+    });
+  }
+};
 
-// Helper function to update bus ratings
-// const updateBusRatings = async (busId) => {
-//   const reviews = await Review.find({ bus: busId });
-  
-//   if (reviews.length === 0) return;
-  
-//   const avgCleanlinessRating = reviews.reduce((sum, review) => sum + review.cleanliness, 0) / reviews.length;
-//   const avgPunctualityRating = reviews.reduce((sum, review) => sum + review.punctuality, 0) / reviews.length;
-//   const avgStaffBehaviorRating = reviews.reduce((sum, review) => sum + review.staffBehavior, 0) / reviews.length;
-//   const avgComfortRating = reviews.reduce((sum, review) => sum + review.comfort, 0) / reviews.length;
-//   const avgOverallRating = reviews.reduce((sum, review) => sum + review.overallRating, 0) / reviews.length;
-  
-//   await Bus.findByIdAndUpdate(busId, {
-//     ratings: {
-//       cleanliness: avgCleanlinessRating.toFixed(1),
-//       punctuality: avgPunctualityRating.toFixed(1),
-//       staffBehavior: avgStaffBehaviorRating.toFixed(1),
-//       comfort: avgComfortRating.toFixed(1),
-//       overall: avgOverallRating.toFixed(1)
-//     },
-//     numReviews: reviews.length
-//   });
-// };
+// Delete a review
+exports.deleteReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Find the review
+    const review = await Review.findById(id);
+    
+    // Check if review exists
+    if (!review) {
+      return res.status(404).json({ message: 'Review not found' });
+    }
+    
+    // Verify ownership (only allow users to delete their own reviews)
+    if (review.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to delete this review' });
+    }
+    
+    // Store bus ID before removal for recalculating ratings
+    const busId = review.bus;
+    
+    // Delete the review
+    await Review.deleteOne({ _id: id });
+    
+    // Recalculate bus average ratings
+    await Review.getAverageRatings(busId);
+    
+    res.status(200).json({ message: 'Review deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting review:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to delete review',
+      error: error.message
+    });
+  }
+};

@@ -1,21 +1,19 @@
 // reviewRoutes.js
 const express = require('express');
 const router = express.Router();
-const { 
-  getBusReviews,
-  createReview,
-  // updateReview
-} = require('../controllers/reviewController');
-const { protect } = require('../middleware/authMiddleware');
+const { getBusReviews, createReview, updateReview, deleteReview } = require('../controllers/reviewController');
+const { protect , authorize } = require('../middleware/authMiddleware');
 
 // Public routes
-router.get('/:busId/reviews', getBusReviews);
+router.get('/buses/:busId', getBusReviews);
 
 // Protected routes
-router.post('/:busId/reviews', protect, createReview);
-// router.post('/', protect, createReview);
+router.post('/buses/:busId', protect, authorize('user') , createReview);
 
+// New protected routes for edit/delete
+router.put('/:id', protect, updateReview);
+router.delete('/:id', protect, deleteReview); 
 
-// router.put('/:id', protect, updateReview);
+// router.put('/:busId/reviews', protect, updateReview);
 
 module.exports = router;

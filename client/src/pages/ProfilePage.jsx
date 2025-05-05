@@ -11,7 +11,7 @@ import { getProfile, getUserReviews, getUserComplaints } from '../api/userApi';
 import { Tab } from '@headlessui/react';
 
 const ProfilePage = () => {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [profileData, setProfileData] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -29,34 +29,40 @@ const ProfilePage = () => {
       navigate('/login', { state: { from: '/profile' } });
       return;
     }
-    const fetchProfileData = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const profileResponse = await getProfile();
-        setProfileData(profileResponse);  
-        const reviewsResponse = await getUserReviews();
-        setReviews(reviewsResponse);        
-        const complaintsResponse = await getUserComplaints();
-        setComplaints(complaintsResponse);
-        
-        // Calculate stats
-        setStats({
-          totalReviews: reviewsResponse.length,
-          totalComplaints: complaintsResponse.length,
-          resolvedComplaints: complaintsResponse.filter(c => c.status.toLowerCase() === 'resolved').length
-        });
-      } catch (err) {
-        console.error('Failed to fetch profile data:', err);
-        setError('Failed to load profile data. Please try again.');
-      } finally {
-        setLoading(false);
-      }
-    };
     if (isAuthenticated) {
       fetchProfileData();
     }
   }, [isAuthenticated, navigate]);
+  
+  const fetchProfileData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const profileResponse = await getProfile();
+      setProfileData(profileResponse);  
+      const reviewsResponse = await getUserReviews();
+      setReviews(reviewsResponse);        
+      const complaintsResponse = await getUserComplaints();
+      setComplaints(complaintsResponse);
+      
+      // Calculate stats
+      setStats({
+        totalReviews: reviewsResponse.length,
+        totalComplaints: complaintsResponse.length,
+        resolvedComplaints: complaintsResponse.filter(c => c.status.toLowerCase() === 'resolved').length
+      });
+    } catch (err) {
+      console.error('Failed to fetch profile data:', err);
+      setError('Failed to load profile data. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleReviewUpdate = () => {
+    // Refresh user profile to get updated reviews
+    fetchProfileData();
+  };
 
   if (loading) {
     return (
@@ -87,11 +93,6 @@ const ProfilePage = () => {
                 Bus Owner
               </span>
             )}
-          </div>
-          <div className="md:ml-auto mt-4 md:mt-0">
-            <button className="bg-white text-primary-600 px-4 py-2 rounded-md hover:bg-primary-50 transition-colors font-medium">
-              Edit Profile
-            </button>
           </div>
         </div>
       </div>
@@ -149,7 +150,7 @@ const ProfilePage = () => {
           
           {/* Reviews Panel */}
           <Tab.Panel className="rounded-xl bg-white p-6 shadow-md">
-            <ReviewHistory reviews={reviews} />
+            <ReviewHistory reviews={reviews} onReviewUpdate={handleReviewUpdate} />
           </Tab.Panel>
           
           {/* Complaints Panel */}

@@ -30,8 +30,10 @@ exports.getBusComplaints = async (req, res) => {
 // Create a new complaint
 exports.createComplaint = async (req, res) => {
   try {
+    
     const { category, description } = req.body;
     const busId = req.params.busId;
+    console.log('control reached create complaint');
     
     // Validation
     if (!mongoose.Types.ObjectId.isValid(busId)) {
@@ -50,7 +52,7 @@ exports.createComplaint = async (req, res) => {
       bus: busId,
       category,
       description,
-      status: 'Pending' // Match the case in your enum
+      status: 'pending' // Match the case in your enum
     });
     
     res.status(201).json(complaint);

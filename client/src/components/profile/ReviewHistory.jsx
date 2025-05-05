@@ -1,10 +1,17 @@
 // src/components/profile/ReviewHistory.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { updateReview, deleteReview } from '../../api/reviewApi';
+import EditReviewModal from './EditReviewModal';
+import DeleteConfirmationModal from './DeleteConfirmationModal';
 
-const ReviewHistory = ({ reviews }) => {  
+const ReviewHistory = ({ reviews, onReviewUpdate }) => {  
   const [sortOption, setSortOption] = useState('newest');
   const [filterOption, setFilterOption] = useState('all');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedReview, setSelectedReview] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   if (!reviews || reviews.length === 0) {
     return (
@@ -60,6 +67,56 @@ const ReviewHistory = ({ reviews }) => {
     const values = Object.values(ratings);
     return values.reduce((sum, val) => sum + val, 0) / values.length;
   };
+
+  // Handle edit review
+  const handleEditClick = (review) => {
+    setSelectedReview(review);
+    setIsEditModalOpen(true);
+  };
+
+  // Handle edit submission
+  const handleEditSubmit = async (updatedData) => {
+    setIsProcessing(true);
+    try {
+      await updateReview(selectedReview._id, updatedData);
+      // Update the parent component
+      if (onReviewUpdate) {
+        onReviewUpdate();
+      }
+      setIsEditModalOpen(false);
+      // Show success message (you can add a toast notification here)
+    } catch (error) {
+      console.error('Failed to update review:', error);
+      // Show error message (you can add a toast notification here)
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Handle delete click
+  const handleDeleteClick = (review) => {
+    setSelectedReview(review);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    setIsProcessing(true);
+    try {
+      await deleteReview(selectedReview._id);
+      // Update the parent component
+      if (onReviewUpdate) {
+        onReviewUpdate();
+      }
+      setIsDeleteModalOpen(false);
+      // Show success message (you can add a toast notification here)
+    } catch (error) {
+      console.error('Failed to delete review:', error);
+      // Show error message (you can add a toast notification here)
+    } finally {
+      setIsProcessing(false);
+    }
+  };
   
   return (
     <div>
@@ -71,7 +128,7 @@ const ReviewHistory = ({ reviews }) => {
             id="filter"
             value={filterOption}
             onChange={(e) => setFilterOption(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            className="border border-gray-300 rounded-md py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           >
             <option value="all">All Ratings</option>
             <option value="5">5 Stars</option>
@@ -88,7 +145,7 @@ const ReviewHistory = ({ reviews }) => {
             id="sort"
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+            className="border border-gray-300 rounded-md py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           >
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
@@ -157,10 +214,18 @@ const ReviewHistory = ({ reviews }) => {
                 
                 {/* Action buttons */}
                 <div className="mt-4 flex justify-end space-x-3">
-                  <button className="text-gray-600 text-sm hover:text-primary-500 transition-colors">
+                  <button 
+                    className="text-gray-600 text-sm hover:text-primary-500 transition-colors"
+                    onClick={() => handleEditClick(review)}
+                    disabled={isProcessing}
+                  >
                     Edit Review
                   </button>
-                  <button className="text-red-500 text-sm hover:text-red-600 transition-colors">
+                  <button 
+                    className="text-red-500 text-sm hover:text-red-600 transition-colors"
+                    onClick={() => handleDeleteClick(review)}
+                    disabled={isProcessing}
+                  >
                     Delete
                   </button>
                 </div>
@@ -179,6 +244,22 @@ const ReviewHistory = ({ reviews }) => {
           </button>
         </div>
       )}
+
+      {/* Edit Review Modal */}
+      <EditReviewModal
+        isOpen={isEditModalOpen}
+        review={selectedReview}
+        onSubmit={handleEditSubmit}
+        onCancel={() => setIsEditModalOpen(false)}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        busName={selectedReview?.bus?.name || 'this bus'}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setIsDeleteModalOpen(false)}
+      />
     </div>
   );
 };
