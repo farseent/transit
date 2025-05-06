@@ -1,7 +1,6 @@
 // src/pages/rto/RTODashboardPage.jsx
 import React, { useEffect, useState } from 'react';
 import { BarChart, RefreshCw, AlertCircle } from 'lucide-react';
-// import RTOLayout from '../../components/rto/RTOLayout';
 import ComplaintStats from '../../components/rto/ComplaintStats';
 import RecentComplaints from '../../components/rto/RecentComplaints';
 import { getComplaintStats, getRecentComplaints } from '../../api/rtoApi';
@@ -46,7 +45,6 @@ const RTODashboardPage = () => {
   }, []);
 
   return (
-    // <RTOLayout>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -78,7 +76,6 @@ const RTODashboardPage = () => {
           loading={loading} 
         />
       </div>
-    // </RTOLayout>
   );
 };
 

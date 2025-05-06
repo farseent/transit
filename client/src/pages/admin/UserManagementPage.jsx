@@ -27,7 +27,7 @@ const UserManagementPage = () => {
   });
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserDetails, setShowUserDetails] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  // const [showCreateModal, setShowCreateModal] = useState(false);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
 
   const fetchUsers = async () => {

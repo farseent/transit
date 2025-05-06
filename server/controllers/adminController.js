@@ -27,13 +27,6 @@ const ActivityLog = require('../models/ActivityLog');
 
     const count = await User.countDocuments(query);
 
-    // Log activity
-    await ActivityLog.create({
-      adminId: req.user.id,
-      action: 'Viewed user list',
-      entityType: 'user'
-    });
-
     res.json({
       users,
       totalPages: Math.ceil(count / limit),
@@ -102,14 +95,6 @@ exports.getUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.userId).select('-password');
     if (!user) return res.status(404).json({ message: 'User not found' });
-
-    await ActivityLog.create({
-      adminId: req.user.id,
-      action: 'Viewed user details',
-      entityType: 'user',
-      entityId: user._id
-    });
-
     res.json(user);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -204,8 +189,17 @@ exports.assignBusToRoute = async (req, res) => {
     }
 
     // Update the bus with the new route
+    const previousRoute = bus.route;
     bus.route = routeId;
     await bus.save();
+
+    await ActivityLog.create({
+      adminId: req.user.id,
+      action: 'Assigned bus to route',
+      entityType: 'bus',
+      entityId: bus._id,
+      changes: { route: { from: previousRoute || null, to: routeId } }
+    });
 
     res.json(bus); // simpler for frontend
   } catch (error) {
@@ -234,12 +228,6 @@ exports.getBusesPaginated = async (req, res) => {
 
     const count = await Bus.countDocuments(query);
 
-    await ActivityLog.create({
-      adminId: req.user.id,
-      action: 'Viewed paginated bus list',
-      entityType: 'bus'
-    });
-
     res.json({
       buses,
       totalPages: Math.ceil(count / limit),
@@ -254,13 +242,6 @@ exports.getBus = async (req, res) => {
   try {
     const bus = await Bus.findById(req.params.busId).populate('owner', 'name email');
     if (!bus) return res.status(404).json({ message: 'Bus not found' });
-
-    await ActivityLog.create({
-      adminId: req.user.id,
-      action: 'Viewed bus details',
-      entityType: 'bus',
-      entityId: bus._id
-    });
 
     res.json(bus);
   } catch (err) {
@@ -358,12 +339,6 @@ exports.getRoutesPaginated = async (req, res) => {
 
     const count = await Route.countDocuments(query);
 
-    await ActivityLog.create({
-      adminId: req.user.id,
-      action: 'Viewed paginated route list',
-      entityType: 'route'
-    });
-
     res.json({
       routes,
       totalPages: Math.ceil(count / limit),
@@ -378,14 +353,6 @@ exports.getRoute = async (req, res) => {
   try {
     const route = await Route.findById(req.params.routeId).populate('stops');
     if (!route) return res.status(404).json({ message: 'Route not found' });
-
-    await ActivityLog.create({
-      adminId: req.user.id,
-      action: 'Viewed route details',
-      entityType: 'route',
-      entityId: route._id
-    });
-
     res.json(route);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -438,13 +405,6 @@ exports.deleteRoute = async (req, res) => {
 exports.getStops = async (req, res) => {
   try {
     const stops = await Stop.find();
-    
-    await ActivityLog.create({
-      adminId: req.user.id,
-      action: 'Viewed all stops',
-      entityType: 'stop'
-    });
-
     res.json(stops);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -559,6 +519,14 @@ exports.updateStop = async (req, res) =>{
       });
     }
 
+    await ActivityLog.create({
+      adminId: req.user.id,
+      action: 'Updated stop',
+      entityType: 'stop',
+      entityId: stop._id,
+      changes: req.body
+    });
+
     res.status(200).json({
       status: 'success',
       data: {
@@ -608,13 +576,6 @@ exports.getAllComplaints = async (req, res) => {
     const complaints = await Complaint.find(query)
       .populate('bus', 'name licensePlate')
       .populate('user', 'name email');
-
-    await ActivityLog.create({
-      adminId: req.user.id,
-      action: 'Viewed all complaints',
-      entityType: 'complaint'
-    });
-
     res.json(complaints);
   } catch (err) {
     res.status(500).json({ message: err.message });

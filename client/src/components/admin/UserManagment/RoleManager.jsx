@@ -35,7 +35,7 @@ const RoleManager = ({ currentRole, userId, onRoleChange, isMobile = false }) =>
           <select
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value)}
-            className="p-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className=" text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="user">User</option>
             <option value="owner">Owner</option>
