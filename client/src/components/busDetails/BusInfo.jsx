@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, DollarSign, MapPin, Bus as BusIcon, Star, User, Calendar } from 'lucide-react';
+import { Clock, DollarSign, MapPin, Bus as BusIcon, Star } from 'lucide-react';
 import { formatTime, formatDuration, formatCurrency } from '../../utils/formatters';
 
 const BusInfo = ({ bus, fromStop, toStop }) => {
@@ -21,12 +21,6 @@ const BusInfo = ({ bus, fromStop, toStop }) => {
           <div className="text-sm text-gray-600">Registration</div>
           <div className="font-medium">{bus.regNumber}</div>
         </div>
-        {bus.owner && (
-          <div className="text-right">
-            <div className="text-sm text-gray-600">Operated by</div>
-            <div className="font-medium">{bus.owner.name}</div>
-          </div>
-        )}
       </div>
       
       {/* Rating overview */}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { Home, User, LogOut, Grid, Menu, X } from 'lucide-react';
+import { Home, User, LogOut, Grid, Menu, X, Bus } from 'lucide-react';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -34,8 +34,9 @@ const Navbar = () => {
     <nav className="bg-primary-500 text-white shadow-md">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <Link to="/" className="text-2xl font-bold flex items-center gap-2">
-          <span className="hidden sm:inline">Transit Hub</span>
-          <span className="sm:hidden">TH</span>
+          <span className=" sm:inline"><Bus /></span>
+          <span className="hidden sm:inline text-xl">Transit Hub</span>
+          {/* <span className="sm:hidden">TH</span> */}
         </Link>
 
         {/* Mobile Menu Toggle Button */}

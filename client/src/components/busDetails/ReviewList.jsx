@@ -12,9 +12,15 @@ const ReviewList = ({ reviews, currentUserId, onEditReview, onDeleteReview }) =>
     );
   }
 
+  const sortedReviews = [...reviews].sort((a, b) => {
+    if (a.user._id === currentUserId) return -1;
+    if (b.user._id === currentUserId) return 1;
+    return 0;
+  });
+
   return (
     <div className="space-y-4">
-      {reviews.map((review) => {
+      {sortedReviews.map((review) => {
         // Calculate overall rating as average of all ratings
         const overallRating = review.ratings ? 
           (review.ratings.cleanliness + 
