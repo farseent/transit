@@ -2,9 +2,9 @@
 import axios from './axios';
 
 // Get complaints with pagination
-export const getComplaints = async (page = 1, limit = 10) => {
+export const getComplaints = async () => {
   try {
-    const response = await axios.get(`/rto/complaints?page=${page}&limit=${limit}`);
+    const response = await axios.get(`/rto/complaints/all`);
     return response.data;
   } catch (error) {
     console.error('Error fetching complaints:', error);

@@ -1,18 +1,10 @@
 // src/components/rto/ComplaintList.jsx
 import React, { useState } from 'react';
 import Table from '../common/Table';
-import Pagination from '../common/Pagination';
 import { useNavigate } from 'react-router-dom';
 import { HiSearch, HiFilter, HiBadgeCheck, HiClock, HiExclamation } from 'react-icons/hi';
 
-const ComplaintList = ({ 
-  complaints, 
-  loading, 
-  totalComplaints, 
-  currentPage, 
-  onPageChange,
-  totalPage
-}) => {
+const ComplaintList = ({ complaints, loading }) => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -24,9 +16,9 @@ const ComplaintList = ({
   // Filter complaints based on search term and status filter
   const filteredComplaints = complaints.filter(complaint => {
     const matchesSearch = searchTerm === '' || 
-      (complaint.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      complaint.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
        complaint.bus?.regNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       complaint.category?.toLowerCase().includes(searchTerm.toLowerCase()));
+       complaint.category?.toLowerCase().includes(searchTerm.toLowerCase());
        
     const matchesStatus = filterStatus === '' || complaint.status === filterStatus;
     
@@ -148,35 +140,23 @@ const ComplaintList = ({
         </div>
         
         <div className="bg-gray-50 rounded-md p-3 text-sm text-gray-600">
-          Showing {filteredComplaints.length} of {totalComplaints} total complaints
+          Showing {filteredComplaints.length} complaints
         </div>
       </div>
       
       {loading ? (
         <LoadingState />
       ) : (
-        <>
-          <div className="overflow-x-auto">
-            <Table 
-              data={filteredComplaints} 
-              columns={columns}
-              onRowClick={handleRowClick} 
-              emptyMessage="No complaints found"
-              className="min-w-full"
-              rowClassName="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
-            />
-          </div>
-          
-          <div className="mt-6">
-            <Pagination 
-              totalItems={totalComplaints}
-              itemsPerPage={10}
-              currentPage={currentPage}
-              onPageChange={onPageChange}
-              totalPage={totalPage}
-            />
-          </div>
-        </>
+        <div className="overflow-x-auto">
+          <Table 
+            data={filteredComplaints} 
+            columns={columns}
+            onRowClick={handleRowClick} 
+            emptyMessage="No complaints found"
+            className="min-w-full"
+            rowClassName="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+          />
+        </div>
       )}
     </div>
   );

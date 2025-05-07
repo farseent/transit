@@ -11,8 +11,8 @@ const UserInfo = ({ user }) => {
     { label: 'Email Address', value: user.email },
     { label: 'Member Since', value: new Date(user.createdAt).toLocaleDateString() },
     { label: 'Account Type', value: user.role || 'User', show: true },
-    { label: 'Phone Number', value: user.phone || 'Not provided' },
-    { label: 'Address', value: user.address || 'Not provided' }
+    // { label: 'Phone Number', value: user.phone || 'Not provided' },
+    // { label: 'Address', value: user.address || 'Not provided' }
   ];
 
   return (

@@ -8,19 +8,13 @@ import { HiOutlineTicket, HiRefresh } from 'react-icons/hi';
 const RTOComplaintsPage = () => {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPage, setTotalPage] = useState(1);
-  const [totalComplaints, setTotalComplaints] = useState(0);
   const [alert, setAlert] = useState({ show: false, type: '', message: '' });
 
-  const fetchComplaints = async (page = 1) => {
+  const fetchComplaints = async () => {
     try {
       setLoading(true);
-      const result = await getComplaints(page);
-      setComplaints(result.complaints);
-      setTotalComplaints(result.total);
-      setCurrentPage(result.page);
-      setTotalPage(result.pages);
+      const result = await getComplaints();
+      setComplaints(result);
     } catch (error) {
       console.error('Error fetching complaints:', error);
       setAlert({
@@ -34,15 +28,11 @@ const RTOComplaintsPage = () => {
   };
 
   useEffect(() => {
-    fetchComplaints(currentPage);
-  }, [currentPage]);
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+    fetchComplaints();
+  }, []);
 
   const handleRefresh = () => {
-    fetchComplaints(currentPage);
+    fetchComplaints();
   };
 
   return (
@@ -77,10 +67,6 @@ const RTOComplaintsPage = () => {
           <ComplaintList 
             complaints={complaints}
             loading={loading}
-            totalComplaints={totalComplaints}
-            currentPage={currentPage}
-            totalPages={totalPage}
-            onPageChange={handlePageChange}
           />
         </div>
       </div>

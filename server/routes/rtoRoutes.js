@@ -10,8 +10,8 @@ router.get('/complaints/stats', protect, authorize('rto'), rtoController.getComp
 // Get recent complaints
 router.get('/complaints/recent', protect, authorize('rto'), rtoController.getRecentComplaints);
 
-// Get all complaints with pagination
-router.get('/complaints', protect, authorize('rto'), rtoController.getComplaints);
+// Get all complaints
+router.get('/complaints/all', protect, authorize('rto'), rtoController.getComplaints);
 
 // Get complaint by ID
 router.get('/complaints/:id', protect, authorize('rto'), rtoController.getComplaintById);

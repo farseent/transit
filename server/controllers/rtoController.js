@@ -7,23 +7,8 @@ const ActivityLog = require('../models/ActivityLog');
 
 exports.getComplaints = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
-    
-    // Apply filters if provided
-    const filter = {};
-    if (req.query.status) {
-      filter.status = req.query.status;
-    }
-    if (req.query.busId) {
-      filter.bus = req.query.busId;
-    }
-    
     // Get complaints with pagination
-    const complaints = await Complaint.find(filter)
-      .skip(skip)
-      .limit(limit)
+    const complaints = await Complaint.find()
       .sort({ createdAt: -1 })
       .populate('user', 'name email')
       .populate({
@@ -34,19 +19,8 @@ exports.getComplaints = async (req, res) => {
           select: 'name'
         }
       });
-    
-    // Get total count for pagination
-    const total = await Complaint.countDocuments(filter);
-    
-    console.log('Data sending from getComplaints =',page );
-    
 
-    res.status(200).json({
-      complaints,
-      total,
-      page,
-      pages: Math.ceil(total / limit)
-    });
+    res.status(200).json( complaints );
   } catch (error) {
     console.error('Error getting complaints:', error);
     res.status(500).json({ message: 'Server error' });
