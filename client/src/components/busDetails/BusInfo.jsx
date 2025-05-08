@@ -1,9 +1,10 @@
 import React from 'react';
-import { Clock, DollarSign, MapPin, Bus as BusIcon, Star } from 'lucide-react';
-import { formatTime, formatDuration, formatCurrency } from '../../utils/formatters';
+import { Clock, MapPin, Bus as BusIcon, Star } from 'lucide-react';
+import { formatTime, formatDuration } from '../../utils/formatters';
+import { FaRupeeSign } from 'react-icons/fa';
 
 const BusInfo = ({ bus, fromStop, toStop }) => {
-    
+  
   const renderStarRating = (rating) => {
     return (
       <div className="flex items-center">
@@ -92,8 +93,8 @@ const BusInfo = ({ bus, fromStop, toStop }) => {
         <div>
           <div className="text-sm text-gray-600">Fare</div>
           <div className="font-medium flex items-center gap-1">
-            <DollarSign size={16} className="text-success" />
-            {formatCurrency(bus.fare) || 'N/A'} 
+            <FaRupeeSign size={16} className="text-success" />
+            {bus.fare || 'N/A'} 
           </div>
         </div>
         <div>
